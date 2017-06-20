@@ -4,8 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Extensions.Caching.IntegrationTests.Infrastructure;
 using Couchbase.IO;
+using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
+
 
 namespace Couchbase.Extensions.Caching.IntegrationTests
 {
@@ -222,12 +224,12 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         {
             var options = new CouchbaseCacheOptions
             {
-                BucketName = "default",
-                Configuration = TestConfiguration.GetCurrentConfiguration(),
                 LifeSpan = timeSpan
             };
 
-            return new CouchbaseCache(options);
+            var provider = new Mock<ICouchbaseCacheBucketProvider>();
+
+            return new CouchbaseCache(provider.Object, options);
         }
 
         public class Poco

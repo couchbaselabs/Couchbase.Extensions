@@ -2,11 +2,21 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Couchbase.Extensions.Session
 {
+    /// <summary>
+    /// Extension methods for adding a CouchbaseSession to the DI container.
+    /// </summary>
     public static class CouchbaseSessionServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="CouchbaseSession"></see> to the application.
+        /// </summary>
+        /// <param name="services">The services.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
         public static IServiceCollection AddCouchbaseSession(this IServiceCollection services)
         {
             if (services == null)
@@ -14,12 +24,20 @@ namespace Couchbase.Extensions.Session
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<ISessionStore, CouchbaseDistributedSessionStore>();
+            services.TryAddTransient<ISessionStore, CouchbaseSessionStore>();
             services.AddDataProtection();
 
             return services;
         }
 
+        /// <summary>
+        /// Adds the <see cref="CouchbaseSession"></see> to the application with <see cref="SessionOptions"/>.
+        /// </summary>
+        /// <param name="services">The services.</param>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
         public static IServiceCollection AddCouchbaseSession(this IServiceCollection services,
             Action<SessionOptions> options)
         {

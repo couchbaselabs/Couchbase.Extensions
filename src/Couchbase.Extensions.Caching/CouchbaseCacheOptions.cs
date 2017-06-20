@@ -17,23 +17,8 @@ namespace Couchbase.Extensions.Caching
         public CouchbaseCacheOptions Value => this;
 
         /// <summary>
-        /// Configuration for the cluster.
-        /// </summary>
-        public ClientConfiguration Configuration { get; set; }
-
-        /// <summary>
-        /// The bucket name of the bucket to open.
-        /// </summary>
-        public string BucketName { get; set; }
-
-        /// <summary>
         /// The global lifespan for cache items.
         /// </summary>
         public TimeSpan? LifeSpan { get; set; }
-
-        /// <summary>
-        /// A bucket reference.
-        /// </summary>
-        public IBucket Bucket { get; set; }
     }
 }

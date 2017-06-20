@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using Couchbase.Configuration.Client;
 using Couchbase.Core;
+using Couchbase.Extensions.DependencyInjection;
 
 namespace Couchbase.Extensions.Caching.UnitTests
 {
@@ -19,7 +20,7 @@ namespace Couchbase.Extensions.Caching.UnitTests
             var services = new ServiceCollection();
 
             // Act
-            services.AddDistributedCouchbaseCache(options => { });
+            services.AddDistributedCouchbaseCache("bucketName", options => { });
 
             // Assert
             var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
@@ -29,35 +30,11 @@ namespace Couchbase.Extensions.Caching.UnitTests
         }
 
         [Test]
-        public void AddDistributedCouchbaseCache_ReplacesPreviouslyUserRegisteredServices()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            services.AddScoped(typeof(IDistributedCache), sp => new Mock<IDistributedCache>());
-            var bucket = new Mock<IBucket>();
-
-            // Act
-            services.AddDistributedCouchbaseCache(options => {
-                options.BucketName = "default";
-                options.Bucket = bucket.Object;
-            });
-
-            // Assert
-            var serviceProvider = services.BuildServiceProvider();
-
-            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
-
-            Assert.NotNull(distributedCache);
-            Assert.AreEqual(ServiceLifetime.Scoped, distributedCache.Lifetime);
-            Assert.IsInstanceOf<CouchbaseCache>(serviceProvider.GetRequiredService<IDistributedCache>());
-        }
-
-        [Test]
         public void AddDistributedCouchbaseCache_Allows_Chaining()
         {
             var services = new ServiceCollection();
 
-            Assert.AreSame(services, services.AddDistributedCouchbaseCache(_ => { }));
+            Assert.AreSame(services, services.AddDistributedCouchbaseCache("bucketName", _ => { }));
         }
     }
 }

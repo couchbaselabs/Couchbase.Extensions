@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Couchbase.Core;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Couchbase.Extensions.Caching
@@ -10,33 +9,38 @@ namespace Couchbase.Extensions.Caching
     /// <summary>
     /// A <see cref="IDistributedCache"/> implementation for Couchbase Server.
     /// </summary>
-    public class CouchbaseCache : IDistributedCache
+    public class CouchbaseCache : ICouchbaseCache
     {
         internal static readonly TimeSpan InfiniteLifetime = TimeSpan.Zero;
 
-        internal IBucket Bucket { get; }
+        /// <summary>
+        /// Gets the Couchbase bucket as the backing store.
+        /// </summary>
+        /// <value>
+        /// The bucket.
+        /// </value>
+        public IBucket Bucket { get; }
 
-        internal IOptions<CouchbaseCacheOptions> Options { get; }
-
-        private ISystemClock _clock = new SystemClock();
-
-        private class CacheItem<T>
-        {
-            public TimeSpan CreationTime { get; set; }
-
-            public T Body;
-        }
+        /// <summary>
+        /// Gets the options used by the Cache.
+        /// </summary>
+        /// <value>
+        /// The options.
+        /// </value>
+        /// <inheritdoc />
+        public CouchbaseCacheOptions Options { get; }
 
         /// <summary>
         /// Constructor for <see cref="CouchbaseCache"/> - if the <see cref="CouchbaseCacheOptions.Bucket"/> field is null,
         /// the bucket will attempted to be retrieved from <see cref="ClusterHelper"/>. If <see cref="ClusterHelper"/> has
         /// not been initialized, then an exception will be thrown.
         /// </summary>
+        /// <param name="provider"></param>
         /// <param name="options"></param>
-        public CouchbaseCache(IOptions<CouchbaseCacheOptions> options)
+        public CouchbaseCache(ICouchbaseCacheBucketProvider provider, IOptions<CouchbaseCacheOptions> options)
         {
-            Options = options;
-            Bucket = options.Value.Bucket ?? ClusterHelper.GetBucket(Options.Value.BucketName);
+            Options = options.Value;
+            Bucket = provider.GetBucket();
         }
 
         /// <summary>
@@ -190,7 +194,7 @@ namespace Couchbase.Extensions.Caching
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        internal TimeSpan GetLifetime(DistributedCacheEntryOptions options = null)
+        public TimeSpan GetLifetime(DistributedCacheEntryOptions options = null)
         {
             if (options?.SlidingExpiration != null)
             {

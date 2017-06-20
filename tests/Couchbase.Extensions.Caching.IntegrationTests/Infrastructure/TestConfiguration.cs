@@ -75,6 +75,14 @@ namespace Couchbase.Extensions.Caching.IntegrationTests.Infrastructure
             return configuration;
         }
 
+        public static IConfiguration GetConfiguration()
+        {
+            var builder = new ConfigurationBuilder();
+            builder.AddJsonFile("config.json");
+
+            return builder.Build().GetSection("couchbase");
+        }
+
         public static Uri BuildBootStrapUrl()
         {
             EnsureConfigurationLoaded();

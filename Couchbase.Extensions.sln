@@ -32,6 +32,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Couchbase.Extensions.Cachin
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Couchbase.Extensions.Caching.UnitTests", "tests\Couchbase.Extensions.Caching.UnitTests\Couchbase.Extensions.Caching.UnitTests.xproj", "{DC727A08-3988-4B71-8362-1F7870B87157}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Couchbase.Extensions.Session.UnitTests", "tests\Couchbase.Extensions.Session.UnitTests\Couchbase.Extensions.Session.UnitTests.xproj", "{14E1822C-F365-48FF-B265-7D679607872E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{DC727A08-3988-4B71-8362-1F7870B87157}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC727A08-3988-4B71-8362-1F7870B87157}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC727A08-3988-4B71-8362-1F7870B87157}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14E1822C-F365-48FF-B265-7D679607872E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14E1822C-F365-48FF-B265-7D679607872E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14E1822C-F365-48FF-B265-7D679607872E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14E1822C-F365-48FF-B265-7D679607872E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -93,5 +99,6 @@ Global
 		{66C1DB94-69F2-4202-BB49-A112915FD932} = {EC47DFB9-AB39-41F8-BD7C-7B25BBCDEBD1}
 		{1F91B9B9-DF56-4F73-B593-B080272B620D} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 		{DC727A08-3988-4B71-8362-1F7870B87157} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
+		{14E1822C-F365-48FF-B265-7D679607872E} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 	EndGlobalSection
 EndGlobal

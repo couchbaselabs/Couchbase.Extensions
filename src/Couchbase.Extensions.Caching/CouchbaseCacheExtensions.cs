@@ -160,7 +160,7 @@ namespace Couchbase.Extensions.Caching
         /// <returns></returns>
         static IBucket GetBucket(IDistributedCache cache, out IOptions<CouchbaseCacheOptions> options)
         {
-            var couchbaseCache = cache as CouchbaseCache;
+            var couchbaseCache = cache as ICouchbaseCache;
             if (couchbaseCache == null)
             {
                 throw new NotSupportedException("The IDistributedCache must be a CouchbaseCache.");

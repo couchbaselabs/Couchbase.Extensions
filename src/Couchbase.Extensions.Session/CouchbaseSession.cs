@@ -2,26 +2,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Couchbase.Extensions.Caching;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Couchbase.Extensions.Session
 {
-    public class CouchbaseDistributedSession : ISession
+    public class CouchbaseSession : ISession
     {
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         private const int IdByteCount = 16;
-        private readonly CouchbaseCache _cache;
+        private readonly IDistributedCache _cache;
         private readonly string _sessionKey;
         private readonly TimeSpan _idleTimeout;
         private readonly Func<bool> _tryEstablishSession;
-        private readonly ILogger<CouchbaseDistributedSession> _logger;
+        private readonly ILogger<CouchbaseSession> _logger;
         private readonly bool _isNewSessionKey;
         private bool _isModified;
         private bool _loaded;
@@ -30,14 +29,7 @@ namespace Couchbase.Extensions.Session
         private byte[] _sessionIdBytes;
         private Dictionary<string, object> _store;
 
-        private class SessionItem
-        {
-            public string SessionId { get; set; }
-
-            public dynamic Body { get; set; }
-        }
-
-        public CouchbaseDistributedSession(
+        public CouchbaseSession(
             IDistributedCache cache,
             string sessionKey,
             TimeSpan idleTimeout,
@@ -65,11 +57,11 @@ namespace Couchbase.Extensions.Session
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _cache = cache as CouchbaseCache;
+            _cache = cache;
             _sessionKey = sessionKey;
             _idleTimeout = idleTimeout;
             _tryEstablishSession = tryEstablishSession;
-            _logger = loggerFactory.CreateLogger<CouchbaseDistributedSession>();
+            _logger = loggerFactory.CreateLogger<CouchbaseSession>();
             _isNewSessionKey = isNewSessionKey;
             _store = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
@@ -171,14 +163,49 @@ namespace Couchbase.Extensions.Session
             }
         }
 
+        /// <summary>
+        /// Retrieve the value of the given key, if present as a JSON byte array.
+        /// </summary>
+        /// <param name="key">The key for the item.</param>
+        /// <param name="value">The value of the item if found as a JSON byte array.</param>
+        /// <returns></returns>
         public bool TryGetValue(string key, out byte[] value)
         {
             Load();
             object item;
             var success = _store.TryGetValue(key, out item);
-
-            value = (byte[])item;
+            if (success)
+            {
+                if (item.GetType() == typeof(byte[]))
+                {
+                    value = (byte[]) item;
+                }
+                else
+                {
+                    value = ConvertToBytes(item);
+                }
+            }
+            else
+            {
+                value = null;
+            }
             return success;
+        }
+
+        internal byte[] ConvertToBytes(object value)
+        {
+            using (var ms = new MemoryStream())
+            {
+                using (var sw = new StreamWriter(ms))
+                {
+                    using (var jr = new JsonTextWriter(sw))
+                    {
+                        var serializer = JsonSerializer.Create();
+                        serializer.Serialize(jr, value);
+                    }
+                }
+                return ms.ToArray();
+            }
         }
 
         public bool TryGetValue<T>(string key, out T value)
