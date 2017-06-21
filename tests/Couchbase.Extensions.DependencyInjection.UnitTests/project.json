@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "dependencies": {
@@ -6,7 +6,7 @@
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.1"
+      "version": "1.1.2"
     },
     "Moq": "4.6.38-alpha",
     "xunit": "2.2.0-beta4-build3444"

@@ -14,8 +14,8 @@
     "dotnet-test-nunit": "3.4.0-beta-3",
     "Microsoft.Extensions.Caching.Abstractions": "1.1.2",
     "Microsoft.Extensions.Configuration": "1.1.2",
-    "Microsoft.Extensions.Configuration.Binder": "1.1.0",
-    "Microsoft.Extensions.Configuration.Json": "1.1.0",
+    "Microsoft.Extensions.Configuration.Binder": "1.1.2",
+    "Microsoft.Extensions.Configuration.Json": "1.1.2",
     "Microsoft.NETCore.App": "1.1.2",
     "NUnit": "3.6.1"
   },

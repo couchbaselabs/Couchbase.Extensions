@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "authors": [ "Brant Burnett" ],
 
@@ -16,11 +16,11 @@
   },
 
   "dependencies": {
-    "CouchbaseNetClient": "2.4.0",
     "DnsClient": "1.0.1",
     "NETStandard.Library": "1.6.1",
-    "Microsoft.Extensions.Logging": "1.1.0",
-    "Microsoft.Extensions.Options": "1.0.1"
+    "CouchbaseNetClient": "2.4.6",
+    "Microsoft.Extensions.Logging": "1.1.2",
+    "Microsoft.Extensions.Options": "1.1.2"
   },
 
   "frameworks": {

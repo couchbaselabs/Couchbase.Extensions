@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "authors": [ "Brant Burnett" ],
 
@@ -16,11 +16,11 @@
   },
 
   "dependencies": {
-    "CouchbaseNetClient": "2.4.0",
-    "Microsoft.Extensions.Configuration": "1.0.1",
-    "Microsoft.Extensions.Configuration.Binder": "1.0.1",
-    "Microsoft.Extensions.DependencyInjection": "1.0.1",
-    "Microsoft.Extensions.Options": "1.0.1",
+    "CouchbaseNetClient": "2.4.6",
+    "Microsoft.Extensions.Configuration": "1.1.2",
+    "Microsoft.Extensions.Configuration.Binder": "1.1.2",
+    "Microsoft.Extensions.DependencyInjection": "1.1.1",
+    "Microsoft.Extensions.Options": "1.1.2",
     "NETStandard.Library": "1.6.1",
     "System.Reflection.Emit": "4.3.0"
   },

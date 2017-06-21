@@ -2,31 +2,31 @@
   "dependencies": {
     "Couchbase.Extensions.DependencyInjection": "1.0.0-*",
     "Couchbase.Extensions.DnsDiscovery": "1.0.0-*",
-    "CouchbaseNetClient": "2.4.0",
-    "Microsoft.NETCore.App": {
-      "version": "1.0.1",
-      "type": "platform"
-    },
-    "Microsoft.AspNetCore.Diagnostics": "1.0.1",
-    "Microsoft.AspNetCore.Mvc": "1.0.1",
     "Microsoft.AspNetCore.Razor.Tools": {
       "version": "1.0.0-preview2-final",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Routing": "1.0.1",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.1",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.1",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.1",
-    "Microsoft.Extensions.Configuration.Json": "1.0.1",
-    "Microsoft.Extensions.Logging": "1.1.0",
-    "Microsoft.Extensions.Logging.Console": "1.1.0",
-    "Microsoft.Extensions.Logging.Debug": "1.1.0",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.1",
-    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0"
+    "CouchbaseNetClient": "2.4.6",
+    "Microsoft.AspNetCore.Diagnostics": "1.1.2",
+    "Microsoft.AspNetCore.Mvc": "1.1.3",
+    "Microsoft.AspNetCore.Routing": "1.1.2",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.2",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.2",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.2",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.2",
+    "Microsoft.Extensions.Configuration.Json": "1.1.2",
+    "Microsoft.Extensions.Logging": "1.1.2",
+    "Microsoft.Extensions.Logging.Console": "1.1.2",
+    "Microsoft.Extensions.Logging.Debug": "1.1.2",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.2",
+    "Microsoft.NETCore.App": {
+      "version": "1.1.2",
+      "type": "platform"
+    },
+    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0"
   },
   "tools": {
-    "BundlerMinifier.Core": "2.0.238",
+    "BundlerMinifier.Core": "2.4.337",
     "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final",
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
   },
