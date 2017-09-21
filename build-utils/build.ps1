@@ -11,13 +11,8 @@ if ($env:APPVEYOR_REPO_TAG -eq "true") {
 Write-Host "Using version: $versionNumber"
 Update-AppveyorBuild -Version $versionNumber
 
-# decrypt snk for signing the assembly
-nuget install secure-file -ExcludeVersion
-.\secure-file\tools\secure-file.exe -decrypt .\build-utils\Couchbase.snk.enc -secret $env:SnkSecret -out .\Src\Couchbase\Couchbase.snk
-
 # clean then build with snk & version number creating nuget package
-msbuild Src\Couchbase\Couchbase.csproj /t:Clean /p:Configuration=Release
-msbuild Src\Couchbase\Couchbase.csproj /t:Restore,Pack /p:Configuration=Release /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=Couchbase.snk /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
+msbuild Src\Couchbase\Couchbase.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
 
 # create zip from release folder
 Compress-Archive -Path .\Src\Couchbase\bin\Release\* -CompressionLevel Optimal -DestinationPath .\Couchbase-Net-Client-$versionNumber.zip
