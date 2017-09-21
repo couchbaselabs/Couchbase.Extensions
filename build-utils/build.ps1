@@ -12,4 +12,4 @@ Write-Host "Using version: $versionNumber"
 Update-AppveyorBuild -Version $versionNumber
 
 # clean then build with snk & version number creating nuget package
-msbuild Src\Couchbase\Couchbase.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
+msbuild Couchbase.Extensions.sln /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
