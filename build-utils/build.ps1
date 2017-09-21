@@ -12,7 +12,7 @@ Write-Host "Using version: $versionNumber"
 Update-AppveyorBuild -Version $versionNumber
 
 # clean then build with snk & version number creating nuget package
-msbuild src/Couchbase.Extensions.DependencyInjection/Couchbase.Extensions.DependencyInjection.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
-msbuild src/Couchbase.Extensions.Caching/Couchbase.Extensions.Caching.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
-msbuild src/Couchbase.Extensions.Session/Couchbase.Extensions.Session.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
-msbuild src/Couchbase.Extensions.DnsDiscovery/Couchbase.Extensions.DnsDiscovery.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true /v:quiet
+msbuild src/Couchbase.Extensions.DependencyInjection/Couchbase.Extensions.DependencyInjection.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
+msbuild src/Couchbase.Extensions.Caching/Couchbase.Extensions.Caching.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
+msbuild src/Couchbase.Extensions.Session/Couchbase.Extensions.Session.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
+msbuild src/Couchbase.Extensions.DnsDiscovery/Couchbase.Extensions.DnsDiscovery.csproj /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
