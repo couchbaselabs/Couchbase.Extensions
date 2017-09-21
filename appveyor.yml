@@ -14,6 +14,10 @@ nuget:
   disable_publish_on_pr: true
 build_script:
 - ps: .\build-utils\Build.ps1
+test_script:
+- cmd: dotnet test "tests\Couchbase.Extensions.DependencyInjection.UnitTests"
+- cmd: dotnet test "tests\Couchbase.Extensions.DnsDiscovery.UnitTests"
+- cmd: dotnet test "tests\Couchbase.Extensions.Caching.UnitTests"
 artifacts:
 - path: '*.nupkg'
 deploy:
