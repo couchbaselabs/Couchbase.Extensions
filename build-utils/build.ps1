@@ -13,4 +13,4 @@ Update-AppveyorBuild -Version $versionNumber
 
 # clean then build with snk & version number creating nuget package
 # msbuild .\Couchbase.Extensions.sln /t:Clean,Restore,Pack /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
-MSBuild.exe .\Couchbase.Extensions.sln /t:Clean,Restore
+MSBuild.exe .\Couchbase.Extensions.sln /t:Clean,Restore /p:Configuration=Release /p:version=$versionNumber /p:PackageOutputPath=..\..\ /p:IncludeSymbols=true /p:IncludeSource=true
