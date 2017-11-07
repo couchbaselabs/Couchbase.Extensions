@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core;
 using Couchbase.Extensions.Caching;
@@ -19,20 +20,20 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public async Task LoadAsync_When_Cache_Has_BackingStore_Session_IsAvailable_True()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>();
-            op.Setup(x => x.Value).Returns(new Dictionary<string, object>());
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>();
+            op.Setup(x => x.Value).Returns(new Dictionary<string, byte[]>());
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAndTouchAsync<Dictionary<string, byte[]>>(It.IsAny<string>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0,0, 10, 0), ()=>true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0,0, 10, 0), TimeSpan.Zero, ()=>true, new LoggerFactory(), true);
 
-            await session.LoadAsync();
+            await session.LoadAsync(CancellationToken.None);
 
             Assert.True(session.IsAvailable);
         }
@@ -40,19 +41,19 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public async Task LoadAsync_When_Cache_DoesNotHave_BackingStore_Session_IsAvailable_True()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string,byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAndTouchAsync<Dictionary<string, byte[]>>(It.IsAny<string>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
-            await session.LoadAsync();
+            await session.LoadAsync(CancellationToken.None);
 
             Assert.True(session.IsAvailable);
         }
@@ -68,9 +69,9 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thekey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
-            await session.LoadAsync();
+            await session.LoadAsync(CancellationToken.None);
 
             Assert.False(session.IsAvailable);
         }
@@ -88,7 +89,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             session.Set("thekey", "thevalue");
 
@@ -111,7 +112,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             session.Set("thekey", "thevalue");
 
@@ -134,7 +135,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = new Poco { Name = "jeff" };
             session.Set("thekey", poco);
@@ -142,7 +143,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             Poco value;
             var result = session.TryGetValue("thekey", out value);
             Assert.True(result);
-            Assert.Same(poco, value);
+            Assert.Equal(poco.Name, value.Name);
         }
 
         [Fact]
@@ -158,7 +159,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             session.Set("thekey", "thevalue");
 
@@ -179,7 +180,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             session.Set("thekeyforpoco", new Poco { Name = "jeff" });
 
@@ -200,7 +201,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = new Poco {Name = "jeff"};
             session.Set("remove_success", poco);
@@ -213,17 +214,17 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public void SetOfT_Test()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAsync<Dictionary<string, byte[]>>(It.IsAny<string>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = new Poco { Name = "jeff" };
             session.Set("SetOfT_Tests", poco);
@@ -232,23 +233,23 @@ namespace Couchbase.Extensions.Session.UnitTests
             var result = session.TryGetValue("SetOfT_Tests", out actual);
 
             Assert.True(result);
-            Assert.Same(poco, actual);
+            Assert.Equal(poco.Name, actual.Name);
         }
 
         [Fact]
         public void Set_Test()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAsync<Dictionary<string, byte[]>>(It.IsAny<string>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = ConvertToBytes(new Poco { Name = "jeff" });
             session.Set("Set_Tests", poco);
@@ -263,17 +264,17 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public void TryGetValue_When_NotFound_Return_Null()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAsync<Dictionary<string, byte[]>>(It.IsAny<string>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             byte[] actual;
             var result = session.TryGetValue("Set_Tests", out actual);
@@ -285,17 +286,17 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public void TryGetValue_When_ByteArray_Return_ByteArray()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAsync<Dictionary<string, byte[]>>(It.IsAny<string>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = ConvertToBytes(new Poco { Name = "jeff" });
             session.Set("Set_Tests", poco);
@@ -310,17 +311,17 @@ namespace Couchbase.Extensions.Session.UnitTests
         [Fact]
         public void Clear_Test()
         {
-            var op = new Mock<IOperationResult<Dictionary<string, object>>>(); //value is null
+            var op = new Mock<IOperationResult<Dictionary<string, byte[]>>>(); //value is null
 
             var bucket = new Mock<IBucket>();
-            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>()))
+            bucket.Setup(x => x.GetAsync<Dictionary<string, byte[]>>(It.IsAny<string>()))
                 .Returns(Task.FromResult(op.Object));
 
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
-            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), () => true, new LoggerFactory(), true);
+            var session = new CouchbaseSession(cache, "thesessionkey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, new LoggerFactory(), true);
 
             var poco = new Poco { Name = "jeff" };
             session.Set("Clear_Test", poco);
@@ -336,7 +337,7 @@ namespace Couchbase.Extensions.Session.UnitTests
         public void Ctor_When_Cache_Is_Null_ArgumentNullException()
         {
             var loggerFactory = new Mock<ILoggerFactory>();
-            Assert.Throws<ArgumentNullException>(()=>new CouchbaseSession(null, "thekey", new TimeSpan(0, 0, 10, 0), () => true, loggerFactory.Object, true));
+            Assert.Throws<ArgumentNullException>(()=>new CouchbaseSession(null, "thekey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, loggerFactory.Object, true));
         }
 
         [Fact]
@@ -344,7 +345,7 @@ namespace Couchbase.Extensions.Session.UnitTests
         {
             var cache = new Mock<IDistributedCache>();
             var loggerFactory = new Mock<ILoggerFactory>();
-            Assert.Throws<ArgumentException>(() => new CouchbaseSession(cache.Object, null, new TimeSpan(0, 0, 10, 0), () => true, loggerFactory.Object, true));
+            Assert.Throws<ArgumentException>(() => new CouchbaseSession(cache.Object, null, new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, loggerFactory.Object, true));
         }
 
         [Fact]
@@ -352,7 +353,7 @@ namespace Couchbase.Extensions.Session.UnitTests
         {
             var cache = new Mock<IDistributedCache>();
             var loggerFactory = new Mock<ILoggerFactory>();
-            Assert.Throws<ArgumentNullException>(() => new CouchbaseSession(cache.Object, "thekey", new TimeSpan(0, 0, 10, 0), null, loggerFactory.Object, true));
+            Assert.Throws<ArgumentNullException>(() => new CouchbaseSession(cache.Object, "thekey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, null, loggerFactory.Object, true));
         }
 
         [Fact]
@@ -360,7 +361,7 @@ namespace Couchbase.Extensions.Session.UnitTests
         {
             var cache = new Mock<IDistributedCache>();
 
-            Assert.Throws<ArgumentNullException>(() => new CouchbaseSession(cache.Object, "thekey", new TimeSpan(0, 0, 10, 0), () => true, null, true));
+            Assert.Throws<ArgumentNullException>(() => new CouchbaseSession(cache.Object, "thekey", new TimeSpan(0, 0, 10, 0), TimeSpan.Zero, () => true, null, true));
         }
 
         public byte[] ConvertToBytes(object value)

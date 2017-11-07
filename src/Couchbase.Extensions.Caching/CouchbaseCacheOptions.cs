@@ -5,10 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Couchbase.Extensions.Caching
 {
-    /// <summary>
-    /// Options for <see cref="CouchbaseCache"/>. Note that if <see cref="Bucket"/> is empty the <see cref="ClusterHelper.GetBucket(string)"/>
-    /// will be used to create the bucket.
-    /// </summary>
+    /// <inheritdoc />
     public class CouchbaseCacheOptions : IOptions<CouchbaseCacheOptions>
     {
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using Couchbase.Authentication;
 using Couchbase.Configuration.Client;
 using Couchbase.Core;
 using Microsoft.Extensions.Logging;
@@ -15,17 +16,8 @@ namespace Couchbase.Extensions.DependencyInjection.Internal
 
         public ClusterProvider(IOptions<CouchbaseClientDefinition> options, ILoggerFactory loggerFactory)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _options = options;
-            _loggerFactory = loggerFactory;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         public virtual ICluster GetCluster()
@@ -55,7 +47,13 @@ namespace Couchbase.Extensions.DependencyInjection.Internal
                 LoggerFactory = _loggerFactory
             };
 
-            return new Cluster(configuration);
+            ICluster cluster = new Cluster(configuration);
+            if (!string.IsNullOrWhiteSpace(clientDefinition.Username))
+            {
+                cluster.Authenticate(new PasswordAuthenticator(clientDefinition.Username, clientDefinition.Password));
+            }
+
+            return cluster;
         }
 
         public void Dispose()

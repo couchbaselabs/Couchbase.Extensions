@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using Couchbase.Configuration.Client;
 using Couchbase.Core;
 
 namespace Couchbase.Extensions.DependencyInjection.Internal
@@ -14,19 +13,16 @@ namespace Couchbase.Extensions.DependencyInjection.Internal
 
         public BucketProvider(IClusterProvider clusterProvider)
         {
-            if (clusterProvider == null)
-            {
-                throw new ArgumentNullException(nameof(clusterProvider));
-            }
-
-            _clusterProvider = clusterProvider;
+            _clusterProvider = clusterProvider ?? throw new ArgumentNullException(nameof(clusterProvider));
         }
 
+        /// <inheritdoc />
         public IBucket GetBucket(string bucketName)
         {
             return GetBucket(bucketName, null);
         }
 
+        /// <inheritdoc />
         public IBucket GetBucket(string bucketName, string password)
         {
             if (_disposed)
@@ -45,8 +41,7 @@ namespace Couchbase.Extensions.DependencyInjection.Internal
                 if (string.IsNullOrWhiteSpace(password))
                 {
                     //try to find a password in configuration
-                    BucketConfiguration bucketConfig;
-                    if (cluster.Configuration.BucketConfigs.TryGetValue(name, out bucketConfig)
+                    if (cluster.Configuration.BucketConfigs.TryGetValue(name, out var bucketConfig)
                         && bucketConfig.Password != null)
                     {
                         return cluster.OpenBucket(name, bucketConfig.Password);

@@ -45,7 +45,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -76,7 +76,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -122,7 +122,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                })
                .ConfigureServices(services =>
                {
-                   services.AddDistributedMemoryCache();
+                   services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                    services.AddCouchbaseSession();
                });
 
@@ -167,7 +167,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -220,7 +220,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(
                 services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -271,7 +271,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -294,8 +294,8 @@ namespace Couchbase.Extensions.Session.UnitTests
         public async Task SessionStart_LogsInformation()
         {
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<DistributedSession>,
-                TestSink.EnableWithTypeName<DistributedSession>);
+                TestSink.EnableWithTypeName<CouchbaseSession>,
+                TestSink.EnableWithTypeName<CouchbaseSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -310,7 +310,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -334,8 +334,8 @@ namespace Couchbase.Extensions.Session.UnitTests
         public async Task ExpiredSession_LogsWarning()
         {
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<DistributedSession>,
-                TestSink.EnableWithTypeName<DistributedSession>);
+                TestSink.EnableWithTypeName<CouchbaseSession>,
+                TestSink.EnableWithTypeName<CouchbaseSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -361,7 +361,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
                 });
 
@@ -423,7 +423,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), NullLoggerFactory.Instance);
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
                     services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
                 });
@@ -473,7 +473,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -509,14 +509,11 @@ namespace Couchbase.Extensions.Session.UnitTests
 
                     app.UseSession();
 
-                    app.Run(context =>
-                    {
-                        throw new InvalidOperationException("An error occurred.");
-                    });
+                    app.Run(context => throw new InvalidOperationException("An error occurred."));
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -545,7 +542,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedMemoryCache();
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -561,8 +558,8 @@ namespace Couchbase.Extensions.Session.UnitTests
         public async Task SessionLogsCacheReadException()
         {
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<DistributedSession>,
-                TestSink.EnableWithTypeName<DistributedSession>);
+                TestSink.EnableWithTypeName<CouchbaseSession>,
+                TestSink.EnableWithTypeName<CouchbaseSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -581,7 +578,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache()
                     {
                         DisableGet = true
                     });
@@ -609,12 +606,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                 writeContext =>
                 {
                     return writeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
-                        || writeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                        || writeContext.LoggerName.Equals(typeof(CouchbaseSession).FullName);
                 },
                 beginScopeContext =>
                 {
                     return beginScopeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
-                        || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                        || beginScopeContext.LoggerName.Equals(typeof(CouchbaseSession).FullName);
                 });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
@@ -630,10 +627,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
-                    {
-                        DisableSetAsync = true
-                    });
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache());
                     services.AddCouchbaseSession();
                 });
 
@@ -644,15 +638,15 @@ namespace Couchbase.Extensions.Session.UnitTests
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessage = sink.Writes.Where(message => message.LoggerName.Equals(typeof(DistributedSession).FullName, StringComparison.Ordinal)).Single();
+            var sessionLogMessage = sink.Writes.First(message => message.LoggerName.Equals(typeof(CouchbaseSession).FullName, StringComparison.Ordinal));
 
             Assert.Contains("Session started", sessionLogMessage.State.ToString());
             Assert.Equal(LogLevel.Information, sessionLogMessage.LogLevel);
 
-            var sessionMiddlewareLogMessage = sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)).Single();
+            var sessionLogMessage2 = sink.Writes.Skip(1).First(message => message.LoggerName.Equals(typeof(CouchbaseSession).FullName, StringComparison.Ordinal));
 
-            Assert.Contains("Error closing the session.", sessionMiddlewareLogMessage.State.ToString());
-            Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessage.LogLevel);
+            Assert.Contains("Session stored", sessionLogMessage2.State.ToString());
+            Assert.Equal(LogLevel.Debug, sessionLogMessage2.LogLevel);
         }
 
         [Fact]
@@ -675,7 +669,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                    services.AddSingleton<IDistributedCache>(new UnreliableCache(new MemoryCache(new MemoryCacheOptions()))
+                    services.AddSingleton<IDistributedCache>(new FauxCouchbaseCache()
                     {
                         DisableRefreshAsync = true
                     });
@@ -691,7 +685,7 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(1, sessionLogMessages.Count);
+            Assert.Single(sessionLogMessages);
             Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
@@ -701,6 +695,14 @@ namespace Couchbase.Extensions.Session.UnitTests
             var provider = new Mock<ICouchbaseCacheBucketProvider>();
             var bucket = new Mock<IBucket>();
             provider.Setup(x => x.GetBucket()).Returns(bucket.Object);
+
+            //set up operation results
+            bucket.Setup(x => x.Get<object>(It.IsAny<string>())).Returns(new OperationResult<object>());
+            bucket.Setup(x => x.GetAsync<Dictionary<string, object>>(It.IsAny<string>())).Returns(
+                Task.FromResult<IOperationResult<Dictionary<string, object>>>(
+                    new OperationResult<Dictionary<string, object>>()));
+            bucket.Setup(x => x.Get<Dictionary<string, object>>(It.IsAny<string>()))
+                .Returns(new OperationResult<Dictionary<string, object>>());
 
             var options = new Mock<IOptions<CouchbaseCacheOptions>>();
 
@@ -720,83 +722,6 @@ namespace Couchbase.Extensions.Session.UnitTests
             {
                 UtcNow = UtcNow.Add(timespan);
             }
-        }
-
-        private class UnreliableCache : ICouchbaseCache
-        {
-            private readonly MemoryDistributedCache _cache;
-
-            public bool DisableGet { get; set; }
-            public bool DisableSetAsync { get; set; }
-            public bool DisableRefreshAsync { get; set; }
-
-            public UnreliableCache(IMemoryCache memoryCache)
-            {
-                _cache = new MemoryDistributedCache(memoryCache);
-            }
-
-            public byte[] Get(string key)
-            {
-                if (DisableGet)
-                {
-                    throw new InvalidOperationException();
-                }
-                return _cache.Get(key);
-            }
-            public Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken)) => _cache.GetAsync(key);
-            public void Refresh(string key) => _cache.Refresh(key);
-            public Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
-            {
-                if (DisableRefreshAsync)
-                {
-                    throw new InvalidOperationException();
-                }
-                return _cache.RefreshAsync(key);
-            }
-            public void Remove(string key) => _cache.Remove(key);
-            public Task RemoveAsync(string key, CancellationToken token = default(CancellationToken)) => _cache.RemoveAsync(key);
-            public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _cache.Set(key, value, options);
-            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
-            {
-                if (DisableSetAsync)
-                {
-                    throw new InvalidOperationException();
-                }
-                return _cache.SetAsync(key, value, options);
-            }
-
-            public Task GetAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RefreshAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RemoveAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            Task<byte[]> IDistributedCache.GetAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IBucket Bucket { get; }
-            public TimeSpan GetLifetime(DistributedCacheEntryOptions options = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public CouchbaseCacheOptions Options { get; }
         }
     }
 }

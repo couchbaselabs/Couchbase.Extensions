@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using Couchbase.Authentication;
 using Couchbase.Configuration.Client;
 using Couchbase.Core;
 using Couchbase.Extensions.DependencyInjection.Internal;
@@ -42,6 +44,55 @@ namespace Couchbase.Extensions.DependencyInjection.UnitTests.Internal
         #endregion
 
         #region GetCluster
+
+        [Fact]
+        public void GetCluster_If_Cluster_Level_Auth_Use_PasswordAuthenticator()
+        {
+            // Arrange
+
+            var options = new Mock<IOptions<CouchbaseClientDefinition>>();
+            options.Setup(x => x.Value).Returns(new CouchbaseClientDefinition
+            {
+                Username = "MyUser",
+                Password = "MyPassword"
+            });
+
+            var loggerFactory = new LoggerFactory();
+
+            var provider = new ClusterProvider(options.Object, loggerFactory);
+
+            // Act/Assert
+
+            var cluster = provider.GetCluster();
+            var authenticator = cluster.Configuration.GetType()
+                .GetProperty("Authenticator", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(cluster.Configuration);
+
+            Assert.IsType<PasswordAuthenticator>(authenticator);
+
+        }
+
+        [Fact]
+        public void GetCluster_If_No_Username_Or_Password_Authenticator_Is_Null()
+        {
+            // Arrange
+
+            var options = new Mock<IOptions<CouchbaseClientDefinition>>();
+            options.Setup(x => x.Value).Returns(new CouchbaseClientDefinition());
+
+            var loggerFactory = new LoggerFactory();
+
+            var provider = new ClusterProvider(options.Object, loggerFactory);
+
+            // Act/Assert
+
+            var cluster = provider.GetCluster();
+            var authenticator = cluster.Configuration.GetType()
+                .GetProperty("Authenticator", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(cluster.Configuration);
+
+            Assert.Null(authenticator);
+        }
 
         [Fact]
         public void GetCluster_Disposed_Exception()

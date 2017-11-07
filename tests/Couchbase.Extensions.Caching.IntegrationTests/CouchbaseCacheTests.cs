@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Couchbase.Authentication;
 using Couchbase.Extensions.Caching.IntegrationTests.Infrastructure;
 using Couchbase.Extensions.DependencyInjection;
 using Couchbase.IO;
@@ -19,7 +20,18 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         {
             if (!ClusterHelper.Initialized)
             {
-                ClusterHelper.Initialize(TestConfiguration.GetCurrentConfiguration());
+                var config = TestConfiguration.GetCurrentConfiguration();
+
+                var settings = TestConfiguration.Settings;
+                if (settings.EnhancedAuth)
+                {
+                    ClusterHelper.Initialize(config,
+                        new PasswordAuthenticator(settings.AdminUsername, settings.AdminPassword));
+                }
+                else
+                {
+                    ClusterHelper.Initialize(config);
+                }
             }
         }
 

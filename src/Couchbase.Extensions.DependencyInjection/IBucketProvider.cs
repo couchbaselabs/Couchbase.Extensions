@@ -1,4 +1,5 @@
 ﻿using System;
+using Couchbase.Configuration.Client;
 using Couchbase.Core;
 
 namespace Couchbase.Extensions.DependencyInjection
@@ -28,6 +29,9 @@ namespace Couchbase.Extensions.DependencyInjection
         /// <param name="bucketName">Name of the bucket.</param>
         /// <param name="password">Password to access the bucket.</param>
         /// <returns><see cref="IBucket"/> implementation for the given bucket name.</returns>
+        /// <remarks>For Couchbase Server 5.0 Role Based Access Control (RBAC) do not use this overload;
+        /// instead set the Username and Password at the root of the configuration in your JSON or App.Config
+        /// or <see cref="ClientConfiguration"/> and call <see cref="IBucketProvider.GetBucket(string)"/>!</remarks>
         IBucket GetBucket(string bucketName, string password);
     }
 }

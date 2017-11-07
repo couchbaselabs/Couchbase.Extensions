@@ -42,12 +42,14 @@ namespace Couchbase.Extensions.Session
         /// </summary>
         /// <param name="sessionKey">The session key.</param>
         /// <param name="idleTimeout">The idle timeout.</param>
+        /// <param name="ioTimeout">The maximum amount of time to load a session from or commit to the session store.</param>
         /// <param name="tryEstablishSession">The try establish session.</param>
         /// <param name="isNewSessionKey">if set to <c>true</c> [is new session key].</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        public ISession Create(string sessionKey, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
+        public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession,
+            bool isNewSessionKey)
         {
             if (string.IsNullOrWhiteSpace(sessionKey))
             {
@@ -58,7 +60,7 @@ namespace Couchbase.Extensions.Session
                 throw new ArgumentNullException(nameof(tryEstablishSession));
             }
 
-            return new CouchbaseSession(_cache, sessionKey, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
+            return new CouchbaseSession(_cache, sessionKey, idleTimeout, ioTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core;
 using Microsoft.Extensions.Caching.Distributed;
@@ -6,19 +7,12 @@ using Microsoft.Extensions.Options;
 
 namespace Couchbase.Extensions.Caching
 {
-    /// <summary>
-    /// A <see cref="IDistributedCache"/> implementation for Couchbase Server.
-    /// </summary>
+    /// <inheritdoc />
     public class CouchbaseCache : ICouchbaseCache
     {
         internal static readonly TimeSpan InfiniteLifetime = TimeSpan.Zero;
 
-        /// <summary>
-        /// Gets the Couchbase bucket as the backing store.
-        /// </summary>
-        /// <value>
-        /// The bucket.
-        /// </value>
+        /// <inheritdoc />
         public IBucket Bucket { get; }
 
         /// <summary>
@@ -31,9 +25,7 @@ namespace Couchbase.Extensions.Caching
         public CouchbaseCacheOptions Options { get; }
 
         /// <summary>
-        /// Constructor for <see cref="CouchbaseCache"/> - if the <see cref="CouchbaseCacheOptions.Bucket"/> field is null,
-        /// the bucket will attempted to be retrieved from <see cref="ClusterHelper"/>. If <see cref="ClusterHelper"/> has
-        /// not been initialized, then an exception will be thrown.
+        /// Standard CTOR for CouchbaseCache
         /// </summary>
         /// <param name="provider"></param>
         /// <param name="options"></param>
@@ -61,14 +53,15 @@ namespace Couchbase.Extensions.Caching
         /// Gets a cache item by its key asynchronously, returning null if the item does not exist within the Cache.
         /// </summary>
         /// <param name="key">The key to lookup the item.</param>
+        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
         /// <returns>The cache item if found, otherwise null.</returns>
-        async Task<byte[]> IDistributedCache.GetAsync(string key)
+        public async Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
         {
+            token.ThrowIfCancellationRequested();
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
-
             return (await Bucket.GetAsync<byte[]>(key)).Value;
         }
 
@@ -76,13 +69,16 @@ namespace Couchbase.Extensions.Caching
         /// Gets a cache item by its key asynchronously, returning null if the item does not exist within the Cache.
         /// </summary>
         /// <param name="key">The key to lookup the item.</param>
+        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
         /// <returns>The cache item if found, otherwise null.</returns>
-        public async Task<byte[]> GetAsync(string key)
+        async Task<byte[]> IDistributedCache.GetAsync(string key, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
+
             return (await Bucket.GetAsync<byte[]>(key)).Value;
         }
 
@@ -113,8 +109,11 @@ namespace Couchbase.Extensions.Caching
         /// <param name="key">The key for the cache item.</param>
         /// <param name="value">An array of bytes representing the item.</param>
         /// <param name="options">The <see cref="DistributedCacheEntryOptions"/> for the item; note that only sliding expiration is currently supported.</param>
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options = null)
+        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options,
+            CancellationToken token = new CancellationToken())
         {
+            token.ThrowIfCancellationRequested();
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -147,8 +146,10 @@ namespace Couchbase.Extensions.Caching
         /// Refreshes or "touches" a key updating it's lifetime expiration asynchronously.
         /// </summary>
         /// <param name="key">The key for the cache item.</param>
-        public async Task RefreshAsync(string key)
+        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
+        public async Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
         {
+            token.ThrowIfCancellationRequested();
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -171,13 +172,14 @@ namespace Couchbase.Extensions.Caching
 
             Bucket.Remove(key);
         }
-
         /// <summary>
         /// Removes an item from the cache by it's key asynchonously.
         /// </summary>
         /// <param name="key">The key for the cache item.</param>
-        public async Task RemoveAsync(string key)
+        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
+        public async Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
         {
+            token.ThrowIfCancellationRequested();
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
@@ -186,14 +188,7 @@ namespace Couchbase.Extensions.Caching
             await Bucket.RemoveAsync(key);
         }
 
-        /// <summary>
-        /// Gets the lifetime or expiration from the <see cref="DistributedCacheEntryOptions"/>. Only
-        /// sliding expiration is currently supported. If <see cref="DistributedCacheEntryOptions.SlidingExpiration"/>
-        /// if not set, then the <see cref="CouchbaseCacheOptions.LifeSpan"/> will be used. If it is empty then the
-        /// default lifespan of zero (0) will be used which is infinite expiration.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public TimeSpan GetLifetime(DistributedCacheEntryOptions options = null)
         {
             if (options?.SlidingExpiration != null)

@@ -17,17 +17,8 @@ namespace Couchbase.Extensions.DependencyInjection.Internal
         // ReSharper disable once PublicConstructorInAbstractClass
         public NamedBucketProvider(IBucketProvider bucketProvider, string bucketName, string password)
         {
-            if (bucketProvider == null)
-            {
-                throw new ArgumentNullException(nameof(bucketProvider));
-            }
-            if (bucketName == null)
-            {
-                throw new ArgumentNullException(nameof(bucketName));
-            }
-
-            _bucketProvider = bucketProvider;
-            BucketName = bucketName;
+            _bucketProvider = bucketProvider ?? throw new ArgumentNullException(nameof(bucketProvider));
+            BucketName = bucketName ?? throw new ArgumentNullException(nameof(bucketName));
             _password = password;
         }
 
