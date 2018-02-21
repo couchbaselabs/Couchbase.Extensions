@@ -40,18 +40,43 @@ namespace Couchbase.Extensions.DnsDiscovery.Internal
                 throw new ArgumentNullException(nameof(recordName));
             }
 
+            // Ensure an empty collection of servers before resolving
+            if (clientDefinition.Servers == null)
+            {
+                clientDefinition.Servers = new List<Uri>();
+            }
+            else
+            {
+                clientDefinition.Servers.Clear();
+            }
+
+            if (!recordName.StartsWith("_"))
+            {
+                // Automatically prepend _couchbase._tcp to the recordName
+                if (ApplyInternal(clientDefinition, "_couchbase._tcp." + recordName))
+                {
+                    // We found an SRV record with _couchbase._tcp prepended, so stop
+                    return;
+                }
+            }
+
+            // Try the record name without prepending _couchbase._tcp (backwards compatibility)
+            ApplyInternal(clientDefinition, recordName);
+        }
+
+        private bool ApplyInternal(CouchbaseClientDefinition clientDefinition, string recordName)
+        {
+            if (clientDefinition == null)
+            {
+                throw new ArgumentNullException(nameof(clientDefinition));
+            }
+            if (recordName == null)
+            {
+                throw new ArgumentNullException(nameof(recordName));
+            }
+
             try
             {
-                // Ensure an empty collection of servers before resolving
-                if (clientDefinition.Servers == null)
-                {
-                    clientDefinition.Servers = new List<Uri>();
-                }
-                else
-                {
-                    clientDefinition.Servers.Clear();
-                }
-
                 _logger.LogInformation("Looking up Couchbase servers using record '{0}'", recordName);
 
                 List<SrvRecord> servers;
@@ -77,7 +102,7 @@ namespace Couchbase.Extensions.DnsDiscovery.Internal
                 if (!servers.Any())
                 {
                     _logger.LogError("No SRV records returned for query '{0}'", recordName);
-                    return;
+                    return false;
                 }
 
                 var firstPriority = servers.First().Priority;
@@ -89,10 +114,13 @@ namespace Couchbase.Extensions.DnsDiscovery.Internal
 
                     clientDefinition.Servers.Add(uri);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(0, ex, "Exception getting Couchbase servers for '{0}'", recordName);
+                return false;
             }
         }
 

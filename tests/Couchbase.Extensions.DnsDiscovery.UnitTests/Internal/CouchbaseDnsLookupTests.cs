@@ -14,7 +14,8 @@ namespace Couchbase.Extensions.DnsDiscovery.UnitTests.Internal
 {
     public class CouchbaseDnsLookupTests
     {
-        private const string RecordName = "_couchbase._tcp.services.local";
+        private const string RecordName = "services.local";
+        private const string FullRecordName = "_couchbase._tcp.services.local";
 
         private static readonly Uri ServerRecord1ExpectedUrl =
             new Uri("http://couchbaseserver1.services.local:8091/pools");
@@ -230,6 +231,41 @@ namespace Couchbase.Extensions.DnsDiscovery.UnitTests.Internal
             // Assert
 
             Assert.Equal(0, clientDefinition.Servers.Count);
+        }
+
+        [Fact]
+        public void Apply_ShortRecordName_ReturnsServersFromFullRecordNameIfPresent()
+        {
+            // Arrange
+
+            var lookupClient = new Mock<ILookupClientAdapter>();
+            lookupClient
+                .Setup(m => m.QuerySrvAsync(RecordName))
+                .Returns(Task.FromResult(new[]
+                {
+                    SrvRecord2Priority10
+                }.AsEnumerable()));
+            lookupClient
+                .Setup(m => m.QuerySrvAsync(FullRecordName))
+                .Returns(Task.FromResult(new[]
+                {
+                    SrvRecord1Priority10
+                }.AsEnumerable()));
+
+            var logger = new Mock<ILogger<CouchbaseDnsLookup>>();
+
+            var clientDefinition = new CouchbaseClientDefinition();
+
+            var lookup = new CouchbaseDnsLookup(lookupClient.Object, logger.Object);
+
+            // Act
+
+            lookup.Apply(clientDefinition, RecordName);
+
+            // Assert
+
+            Assert.Equal(1, clientDefinition.Servers.Count);
+            Assert.Equal(ServerRecord1ExpectedUrl, clientDefinition.Servers[0]);
         }
 
         [Fact]
