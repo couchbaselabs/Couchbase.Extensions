@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageId>Couchbase.Extensions.Compression</PackageId>
+        <Version>0.1.0</Version>
+        <TargetFrameworks>netstandard1.5;netstandard2.0</TargetFrameworks>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NetStandardImplicitPackageVersion>2.0.1</NetStandardImplicitPackageVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+        <TargetFrameworks>$(TargetFrameworks);net45</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+        <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD15</DefineConstants>
+        <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>$(DefineConstants);NETSTANDARD;NETSTANDARD20</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="lib\snappy32.dll" />
+      <None Remove="lib\snappy32.lib" />
+      <None Remove="lib\snappy64.dll" />
+      <None Remove="lib\snappy64.lib" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="lib\snappy32.dll" />
+      <EmbeddedResource Include="lib\snappy32.lib" />
+      <EmbeddedResource Include="lib\snappy64.dll" />
+      <EmbeddedResource Include="lib\snappy64.lib" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CouchbaseNetClient" Version="2.5.10" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+    </ItemGroup>
+
+</Project>
