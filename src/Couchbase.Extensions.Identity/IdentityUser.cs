@@ -22,7 +22,7 @@ namespace Couchbase.Extensions.Identity
 
 		public string Id { get; set; }
 
-        [JsonProperty("type")] public string Type { get; set; }
+        [JsonProperty("type")] public string Type => "identityuser";
 
         public string UserName { get; set; }
 

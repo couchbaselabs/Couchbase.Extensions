@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Linq;
@@ -15,8 +17,9 @@ namespace Couchbase.Extensions.Identity
         }
     }
 
-
-    public class UserStore<TUser> : IUserPasswordStore<TUser> where TUser : IdentityUser
+    public class UserStore<TUser> :
+        IUserPasswordStore<TUser>,
+        IUserClaimStore<TUser> where TUser : IdentityUser
     {
         private IBucketContext _context;
 
@@ -33,6 +36,8 @@ namespace Couchbase.Extensions.Identity
         {
             //throw new NotImplementedException();
         }
+
+        #region IUserPasswordStore<TUser>
 
         public Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken)
         {
@@ -211,5 +216,96 @@ namespace Couchbase.Extensions.Identity
                 Description = operationResult.Exception?.ToString()
             };
         }
+
+        #endregion
+
+        #region IUserClaimStore<TUser>
+
+        public async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return await Task.FromResult(user.Claims.Select(x => x.ToSecurityClaim()).ToList()).ConfigureAwait(false);
+        }
+
+        public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (claims == null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
+            foreach (var claim in claims)
+            {
+                user.AddClaim(claim);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+            if (newClaim == null)
+            {
+                throw new ArgumentNullException(nameof(newClaim));
+            }
+
+            var index = user.Claims.FindIndex(x => x.Value == claim.Value && x.Type == claim.Type);
+            user.Claims[index] = new IdentityUserClaim(newClaim);
+
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (claims == null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
+
+            foreach (var claim in claims)
+            {
+                var matchedClaims = user.Claims.Where(x => x.Type == claim.Type && x.Value == claim.Value).ToList();
+                foreach (var identityUserClaim in matchedClaims)
+                {
+                    user.Claims.Remove(identityUserClaim);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public async Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+        {
+            var query = await (from u in _context.Query<TUser>()
+                where u.Claims.Contains(new IdentityUserClaim(claim))
+                select u).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+
+            return query.ToList();
+        }
+
+#endregion
     }
 }

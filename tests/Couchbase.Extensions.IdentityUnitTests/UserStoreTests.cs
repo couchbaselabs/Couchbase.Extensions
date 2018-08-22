@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Couchbase.Core;
 using Couchbase.Extensions.DependencyInjection;
 using Couchbase.Extensions.Identity;
 using Couchbase.Linq;
+using Couchbase.N1QL;
 using Moq;
 using Xunit;
 
@@ -77,6 +79,85 @@ namespace Couchbase.Extensions.IdentityUnitTests
             await Assert.ThrowsAsync<ArgumentException>("normalizedRoleName", async () => await store.IsInRoleAsync(new IdentityUser("fake"), ""));
             */
 #pragma warning restore Await1 // Method is not configured to be awaited
+        }
+
+        [Fact]
+        public async void Test_GetClaimsAsync()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var mockBucketProvider = new Mock<ICouchbaseIdentityBucketProvider>();
+            mockBucketProvider.Setup(x => x.GetBucket()).Returns(mockBucket.Object);
+
+            var store = new UserStore<IdentityUser>(mockBucketProvider.Object);
+            var claims = await store.GetClaimsAsync(new IdentityUser
+            {
+                Claims = new List<IdentityUserClaim>
+                {
+                    new IdentityUserClaim(new Claim("theclaim", "myclaim"))
+                }
+            }, new CancellationToken(false)).ConfigureAwait(false);
+
+            Assert.IsType<List<Claim>>(claims);
+        }
+
+        [Fact]
+        public async void Test_ReplaceClaimAsync()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var mockBucketProvider = new Mock<ICouchbaseIdentityBucketProvider>();
+            mockBucketProvider.Setup(x => x.GetBucket()).Returns(mockBucket.Object);
+
+            var store = new UserStore<IdentityUser>(mockBucketProvider.Object);
+            var user = new IdentityUser
+            {
+                Claims = new List<IdentityUserClaim>
+                {
+                    new IdentityUserClaim(new Claim("theclaim1", "myclaim")),
+                    new IdentityUserClaim(new Claim("theclaim2", "myclaim")),
+                    new IdentityUserClaim(new Claim("theclaim3", "myclaim"))
+                }
+            };
+
+            var newClaim = new IdentityUserClaim(new Claim("newclaim", "newvalue"));
+
+            await store.ReplaceClaimAsync(user,
+                user.Claims[1].ToSecurityClaim(),
+                newClaim.ToSecurityClaim(),
+                new CancellationToken(false)).ConfigureAwait(false);
+
+            Assert.Equal(newClaim, user.Claims[1]);
+        }
+
+        [Fact]
+        public async void Test_RemoveClaimAsync()
+        {
+            var mockBucket = new Mock<IBucket>();
+            var mockBucketProvider = new Mock<ICouchbaseIdentityBucketProvider>();
+            mockBucketProvider.Setup(x => x.GetBucket()).Returns(mockBucket.Object);
+
+            var store = new UserStore<IdentityUser>(mockBucketProvider.Object);
+            var user = new IdentityUser
+            {
+                Claims = new List<IdentityUserClaim>
+                {
+                    new IdentityUserClaim(new Claim("theclaim1", "myclaim")),
+                    new IdentityUserClaim(new Claim("theclaim2", "myclaim")),
+                    new IdentityUserClaim(new Claim("theclaim3", "myclaim")),
+                    new IdentityUserClaim(new Claim("theclaim4", "myclaim"))
+                }
+            };
+
+            var claimsToRemove = new List<Claim>
+            {
+                new Claim("theclaim2", "myclaim"),
+                new Claim("theclaim3", "myclaim"),
+            };
+
+            await store.RemoveClaimsAsync(user, claimsToRemove, new CancellationToken(false));
+
+            Assert.True(user.Claims.Count == 2);
+            Assert.True(user.Claims[0].Type == "theclaim1");
+            Assert.True(user.Claims[1].Type == "theclaim4");
         }
     }
 }

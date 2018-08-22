@@ -24,8 +24,7 @@ namespace Couchbase.Extensions.Identity
 
         public string NormalizedName { get; set; }
 
-        [JsonProperty("type")]
-        public string Type { get; set; }
+        [JsonProperty("type")] public string Type => "identityrole";
 
         public override string ToString() => Name;
     }
