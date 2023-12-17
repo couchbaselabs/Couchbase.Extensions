@@ -24,6 +24,7 @@ namespace Couchbase.Extensions.Session.UnitTests
             if (descriptor != null) services.Remove(descriptor);
             services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
             services.TryAddSingleton<ICouchbaseCache, CouchbaseInMemoryCache>();
+            services.TryAddSingleton(TimeProvider.System);
 
             return services;
         }

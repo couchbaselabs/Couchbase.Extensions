@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-using Couchbase.KeyValue;
+﻿using Couchbase.Extensions.DependencyInjection;
 
 namespace Couchbase.Extensions.Caching
 {
-    public interface ICouchbaseCacheCollectionProvider
+    public interface ICouchbaseCacheCollectionProvider : INamedCollectionProvider
     {
-        ValueTask<ICouchbaseCollection> GetCollectionAsync();
     }
 }
