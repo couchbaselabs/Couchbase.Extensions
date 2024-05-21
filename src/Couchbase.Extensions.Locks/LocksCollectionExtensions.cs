@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Couchbase.Extensions.Locks
 {
+    /// <summary>
+    /// Distributed mutex extensions for <see cref="ICouchbaseCollection"/>.
+    /// </summary>
     public static class LocksCollectionExtensions
     {
         /// <summary>

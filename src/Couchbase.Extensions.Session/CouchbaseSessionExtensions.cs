@@ -35,7 +35,7 @@ namespace Couchbase.Extensions.Session
 
                 return success;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //need to log this
                 return false;

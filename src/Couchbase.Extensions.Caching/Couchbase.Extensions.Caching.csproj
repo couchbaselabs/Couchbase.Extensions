@@ -1,43 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;</TargetFrameworks>
-    <AssemblyName>Couchbase.Extensions.Caching</AssemblyName>
-    <PackageId>Couchbase.Extensions.Caching</PackageId>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>3.3.5</Version>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+
     <Description>A custom ASP.NET Core Middleware plugin for distributed cache using Couchbase server as the backing store. Supports both Memcached (in-memory) and Couchbase (persistent) buckets.</Description>
     <PackageTags>Couchbase;netcore;cache;session;caching;distributed;middleware;database;nosql;json</PackageTags>
-    <Copyright>Couchbase, Inc. 2022</Copyright>
-    <PackageProjectUrl>https://github.com/couchbaselabs/Couchbase.Extensions</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/couchbaselabs/Couchbase.Extensions</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-
-    <LangVersion>9</LangVersion>
-    <Nullable>enable</Nullable>
-    <SignAssembly>False</SignAssembly>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <PackageIcon>couchbase.png</PackageIcon>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <AssemblyOriginatorKeyFile>C:\keys\Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.3.5" />
-    <PackageReference Include="Couchbase.Extensions.DependencyInjection" Version="3.3.5" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="couchbase.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <Pack>True</Pack>
-      <PackagePath>/</PackagePath>
-    </None>
+    <PackageReference Include="CouchbaseNetClient" />
+    <PackageReference Include="Couchbase.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\caching.md" Pack="true" PackagePath="\README.md" />
   </ItemGroup>
 
 </Project>

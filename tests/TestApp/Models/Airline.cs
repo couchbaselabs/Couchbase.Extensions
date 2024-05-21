@@ -5,21 +5,21 @@ namespace TestApp.Models
     public class Airline
     {
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("iata")]
-        public string Iata { get; set; }
+        public string? Iata { get; set; }
 
         [JsonProperty("icao")]
-        public string Icao { get; set; }
+        public string? Icao { get; set; }
 
         [JsonProperty("callsign")]
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         [JsonProperty("country")]
-        public string Country { get; set; }
+        public string? Country { get; set; }
     }
 }

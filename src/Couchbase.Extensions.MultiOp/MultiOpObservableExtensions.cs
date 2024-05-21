@@ -47,7 +47,7 @@ namespace Couchbase.Extensions.MultiOp
                 .ToTask(cancellationToken)
                 .ContinueWith(static (task, state) =>
                 {
-                    var localTcs = (TaskCompletionSource<bool>) state;
+                    var localTcs = (TaskCompletionSource<bool>) state!;
 
                     if (task.IsFaulted)
                     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
@@ -8,17 +9,17 @@ namespace Couchbase.Extensions.Session.UnitTests
     public class CouchbaseDistributedSessionExtensionTests
     {
         [Fact]
-        public void When_Session_Is_Not_CouchbaseDistributedSession_SetObject_Throws_NotSupportedException()
+        public async Task When_Session_Is_Not_CouchbaseDistributedSession_SetObject_Throws_NotSupportedException()
         {
            var session = new Mock<ISession>();
-           Assert.ThrowsAsync<NotSupportedException>(()=>session.Object.SetObject("key", "value"));
+           await Assert.ThrowsAsync<NotSupportedException>(()=>session.Object.SetObject("key", "value"));
         }
 
         [Fact]
-        public void When_Session_Is_Not_CouchbaseDistributedSession_GetObject_Throws_NotSupportedException()
+        public async Task When_Session_Is_Not_CouchbaseDistributedSession_GetObject_Throws_NotSupportedException()
         {
             var session = new Mock<ISession>();
-            Assert.ThrowsAsync<NotSupportedException>(() => session.Object.GetObject<string>("key"));
+            await Assert.ThrowsAsync<NotSupportedException>(() => session.Object.GetObject<string>("key"));
         }
     }
 }

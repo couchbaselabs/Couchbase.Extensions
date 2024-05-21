@@ -1,34 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;</TargetFrameworks>
-    <AssemblyName>Couchbase.Extensions.Compression.Snappier</AssemblyName>
-    <PackageId>Couchbase.Extensions.Compression.Snappier</PackageId>
-    <Version>3.0.0</Version>
-    <Description>Extends the Couchbase SDK with Snappier compression for key/value operations. Designed for .NET Core 3.0 and later.</Description>
-    <PackageTags>Couchbase;netcore;compression;snappy</PackageTags>
-    <Copyright>Couchbase, Inc. 2020</Copyright>
-    <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/couchbaselabs/Couchbase.Extensions</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/couchbaselabs/Linq2Couchbase/master/Packaging/couchbase-logo.png</PackageIconUrl>
-    <RepositoryType>git</RepositoryType>
-
-    <LangVersion>8</LangVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Extends the Couchbase SDK with Snappier compression for key/value operations. Designed for .NET Core 3.0 and later.</Description>
+    <PackageTags>Couchbase;netcore;compression;snappy</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.4.8" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Snappier" Version="1.1.3" />
+    <PackageReference Include="CouchbaseNetClient" VersionOverride="3.4.8" />
+    <PackageReference Include="Snappier" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\compression.md" Pack="true" PackagePath="\README.md" />
   </ItemGroup>
 
 </Project>
