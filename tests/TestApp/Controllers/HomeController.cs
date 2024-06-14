@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TestApp.Buckets;
@@ -22,18 +23,13 @@ namespace TestApp.Controllers
 
         public async Task<IActionResult> Airlines()
         {
-            var bucket = _bucketProvider.GetBucket();
+            var bucket = await _bucketProvider.GetBucketAsync();
 
             var result =
-                await bucket.QueryAsync<Airline>(
+                await bucket.Cluster.QueryAsync<Airline>(
                     "SELECT Extent.* FROM `travel-sample` AS Extent WHERE type = 'airline' ORDER BY name");
 
-            if (!result.Success)
-            {
-                throw new Exception("Couchbase Error", result.Exception);
-            }
-
-            return View(result.Rows);
+            return View(await result.Rows.ToListAsync());
         }
 
         public IActionResult Error()

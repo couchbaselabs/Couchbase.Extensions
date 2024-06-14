@@ -1,4 +1,4 @@
-image: Visual Studio 2019
+image: Visual Studio 2022
 version: '{build}'
 branches:
   only:
@@ -15,19 +15,13 @@ build:
   publish_nuget_symbols: true
   verbosity: minimal
 after_build:
-- cmd: dotnet pack --configuration %CONFIGURATION% "src/Couchbase.Extensions.Session"
-- cmd: dotnet pack --configuration %CONFIGURATION% "src/Couchbase.Extensions.Caching"
-- cmd: dotnet pack --configuration %CONFIGURATION% "src/Couchbase.Extensions.Locks"
+- cmd: dotnet pack --configuration %CONFIGURATION% "Couchbase.Extensions.sln"
 test_script:
 - cmd: dotnet test "tests\Couchbase.Extensions.Caching.UnitTests"
 - cmd: dotnet test "tests\Couchbase.Extensions.Locks.UnitTests"
 artifacts:
-- path: src/Couchbase.Extensions.Session/bin/%CONFIGURATION%/*.nupkg
+- path: artifacts/package/%CONFIGURATION%/*.*nupkg
   name: Session
-- path: src/Couchbase.Extensions.Caching/bin/%CONFIGURATION%/*.nupkg
-  name: Caching
-- path: src/Couchbase.Extensions.Locks/bin/%CONFIGURATION%/*.nupkg
-  name: Locks
 deploy:
 - provider: NuGet
   api_key:

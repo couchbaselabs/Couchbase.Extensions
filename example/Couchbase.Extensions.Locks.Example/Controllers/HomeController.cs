@@ -1,10 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Couchbase.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Couchbase.Extensions.Locks.Example.Models;
-using Microsoft.Extensions.Logging;
 using Polly;
 
 namespace Couchbase.Extensions.Locks.Example.Controllers
@@ -12,9 +9,16 @@ namespace Couchbase.Extensions.Locks.Example.Controllers
     public class HomeController : Controller
     {
         // Retry up to 10 times with a 1 second wait
-        private static readonly AsyncPolicy RetryPolicy =
-            Policy.Handle<CouchbaseLockUnavailableException>()
-                .WaitAndRetryAsync(10, _ => TimeSpan.FromSeconds(1));
+        private static readonly ResiliencePipeline RetryPolicy =
+            new ResiliencePipelineBuilder()
+                .AddRetry(new Polly.Retry.RetryStrategyOptions
+                {
+                    ShouldHandle = new PredicateBuilder().Handle<CouchbaseLockUnavailableException>(),
+                    MaxRetryAttempts = 10,
+                    Delay = TimeSpan.FromSeconds(1),
+                    BackoffType = DelayBackoffType.Constant
+                })
+                .Build();
 
         private readonly IBucketProvider _bucketProvider;
         private readonly ILogger<HomeController> _logger;
@@ -43,8 +47,11 @@ namespace Couchbase.Extensions.Locks.Example.Controllers
 
                 // Retry policy will try 10 times to get the lock, and will wait 1 second between attempts
                 // Lock will be held for 2 seconds if not renewed
-                using (var mutex = await RetryPolicy.ExecuteAsync(() =>
-                    collection.RequestMutexAsync("my_lock_name", TimeSpan.FromSeconds(2))))
+                // "collection" is passed to the lambda as a state parameter to avoid the heap allocation of creating a closure
+                using (var mutex = await RetryPolicy.ExecuteAsync(
+                    static (state, cancellationToken) =>
+                        new ValueTask<ICouchbaseMutex>(state.RequestMutexAsync("my_lock_name", TimeSpan.FromSeconds(2), cancellationToken)),
+                    collection))
                 {
                     // Will renew the lock every second, up to a maximum of 15 seconds, so long as the process keeps running
                     mutex.AutoRenew(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(15));

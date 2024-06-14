@@ -1,43 +1,34 @@
 using Couchbase.Extensions.Caching;
 using Couchbase.Extensions.DependencyInjection;
 
-namespace Couchbase.Extensions.Caching.Example
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddCouchbase(opt =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+    opt.ConnectionString = "couchbase://localhost";
+    opt.UserName = "Administrator";
+    opt.Password = "password";
+});
 
-            // Add services to the container.
+builder.Services.AddDistributedCouchbaseCache("default", opt => { });
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-            builder.Services.AddCouchbase(opt =>
-            {
-                opt.ConnectionString = "couchbase://localhost";
-                opt.UserName = "Administrator";
-                opt.Password = "password";
-            });
+var app = builder.Build();
 
-            builder.Services.AddDistributedCouchbaseCache("default", opt => { });
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+await app.RunAsync();

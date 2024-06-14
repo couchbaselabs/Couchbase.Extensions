@@ -1,30 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Authors>Couchbase, Inc.</Authors>
-    <TargetFrameworks>netstandard2.1;net6.0;</TargetFrameworks>
-    <AssemblyName>Couchbase.Extensions.Locks</AssemblyName>
-    <PackageId>Couchbase.Extensions.Locks</PackageId>
-    <PackageTags>Couchbase;netcore</PackageTags>
-    <PackageIconUrl>https://raw.githubusercontent.com/couchbaselabs/Linq2Couchbase/master/Packaging/couchbase-logo.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/couchbaselabs/Couchbase.Extensions</PackageProjectUrl>
-    <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/couchbaselabs/Couchbase.Extensions</RepositoryUrl>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-
-    <LangVersion>8</LangVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <VersionPrefix>2.0.0</VersionPrefix>
-    <VersionSuffix>local-$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmm'))</VersionSuffix>
+    <PackageTags>Couchbase;netcore</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.3.4" />
-    <PackageReference Include="Couchbase.Extensions.DependencyInjection" Version="3.3.4" />
+    <PackageReference Include="CouchbaseNetClient" />
+    <PackageReference Include="Couchbase.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\locks.md" Pack="true" PackagePath="\README.md" />
   </ItemGroup>
 
 </Project>

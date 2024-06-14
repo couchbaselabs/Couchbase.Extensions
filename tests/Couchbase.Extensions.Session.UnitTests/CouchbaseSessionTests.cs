@@ -48,7 +48,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             Assert.Null(context.Session.GetString("NotFound"));
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -60,13 +60,11 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(string.Empty);
-                response.EnsureSuccessStatusCode();
-                Assert.False(response.Headers.TryGetValues("Set-Cookie", out var _));
-            }
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(string.Empty);
+            response.EnsureSuccessStatusCode();
+            Assert.False(response.Headers.TryGetValues("Set-Cookie", out var _));
         }
 
         [Fact]
@@ -85,7 +83,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                             Assert.Null(context.Session.GetString("Key"));
                             context.Session.SetString("Key", "Value");
                             Assert.Equal("Value", context.Session.GetString("Key"));
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -97,15 +95,13 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(string.Empty);
-                response.EnsureSuccessStatusCode();
-                Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
-                Assert.Single(values);
-                Assert.True(!string.IsNullOrWhiteSpace(values.First()));
-            }
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(string.Empty);
+            response.EnsureSuccessStatusCode();
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
+            Assert.Single(values);
+            Assert.True(!string.IsNullOrWhiteSpace(values.First()));
         }
 
         [Theory]
@@ -140,7 +136,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                             Assert.Null(context.Session.GetString("Key"));
                             context.Session.SetString("Key", "Value");
                             Assert.Equal("Value", context.Session.GetString("Key"));
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -152,21 +148,19 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(requestUri);
+            response.EnsureSuccessStatusCode();
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
+            Assert.Single(values);
+            if (shouldBeSecureOnly)
             {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(requestUri);
-                response.EnsureSuccessStatusCode();
-                Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
-                Assert.Single(values);
-                if (shouldBeSecureOnly)
-                {
-                    Assert.Contains("; secure", values.First());
-                }
-                else
-                {
-                    Assert.DoesNotContain("; secure", values.First());
-                }
+                Assert.Contains("; secure", values.First());
+            }
+            else
+            {
+                Assert.DoesNotContain("; secure", values.First());
             }
         }
 
@@ -203,20 +197,18 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync("first");
-                response.EnsureSuccessStatusCode();
-                Assert.Equal("0", await response.Content.ReadAsStringAsync());
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("first");
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
-                client = server.CreateClient();
-                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
-                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
-                Assert.Equal("1", await client.GetStringAsync("/"));
-                Assert.Equal("2", await client.GetStringAsync("/"));
-                Assert.Equal("3", await client.GetStringAsync("/"));
-            }
+            client = server.CreateClient();
+            var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+            client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
+            Assert.Equal("1", await client.GetStringAsync("/"));
+            Assert.Equal("2", await client.GetStringAsync("/"));
+            Assert.Equal("3", await client.GetStringAsync("/"));
         }
 
         [Fact]
@@ -263,19 +255,17 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync("first");
-                response.EnsureSuccessStatusCode();
-                Assert.Equal("0", await response.Content.ReadAsStringAsync());
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("first");
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
-                client = server.CreateClient();
-                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
-                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
-                Assert.Equal("1", await client.GetStringAsync("/second"));
-                Assert.Equal("2", await client.GetStringAsync("/third"));
-            }
+            client = server.CreateClient();
+            var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+            client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
+            Assert.Equal("1", await client.GetStringAsync("/second"));
+            Assert.Equal("2", await client.GetStringAsync("/third"));
         }
 
         [Fact]
@@ -321,19 +311,17 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync("first");
-                response.EnsureSuccessStatusCode();
-                Assert.Equal("0", await response.Content.ReadAsStringAsync());
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("first");
+            response.EnsureSuccessStatusCode();
+            Assert.Equal("0", await response.Content.ReadAsStringAsync());
 
-                client = server.CreateClient();
-                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
-                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
-                Assert.Equal("1", await client.GetStringAsync("/second"));
-                Assert.Equal("2", await client.GetStringAsync("/third"));
-            }
+            client = server.CreateClient();
+            var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+            client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
+            Assert.Equal("1", await client.GetStringAsync("/second"));
+            Assert.Equal("2", await client.GetStringAsync("/third"));
         }
 
         [Fact]
@@ -354,7 +342,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             context.Session.SetString("Key", "Value");
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -495,26 +483,24 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync("AddDataToSession");
+            response.EnsureSuccessStatusCode();
+
+            client = server.CreateClient();
+            var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
+            client.DefaultRequestHeaders.Add(
+                "Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
+
+            for (var i = 0; i < 5; i++)
             {
-                var client = server.CreateClient();
-                var response = await client.GetAsync("AddDataToSession");
-                response.EnsureSuccessStatusCode();
-
-                client = server.CreateClient();
-                var cookie = SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()).First();
-                client.DefaultRequestHeaders.Add(
-                    "Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
-
-                for (var i = 0; i < 5; i++)
-                {
-                    clock.Add(TimeSpan.FromMinutes(10));
-                    await client.GetStringAsync("/DoNotAccessSessionData");
-                }
-
-                var data = await client.GetStringAsync("/AccessSessionData");
-                Assert.Equal("10", data);
+                clock.Add(TimeSpan.FromMinutes(10));
+                await client.GetStringAsync("/DoNotAccessSessionData");
             }
+
+            var data = await client.GetStringAsync("/AccessSessionData");
+            Assert.Equal("10", data);
         }
 
         [Fact]
@@ -539,7 +525,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             context.Session.SetString("key", "value");
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -551,12 +537,10 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(string.Empty);
-                response.EnsureSuccessStatusCode();
-            }
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(string.Empty);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -601,11 +585,9 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(string.Empty);
-            }
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(string.Empty);
         }
 
         [Fact]
@@ -625,7 +607,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                             context.Session.SetString("key", "value");
                             Assert.Equal("VALUE", context.Session.GetString("KEY"));
                             Assert.Equal("value", context.Session.GetString("key"));
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -637,12 +619,10 @@ namespace Couchbase.Extensions.Session.UnitTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(string.Empty);
-                response.EnsureSuccessStatusCode();
-            }
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var response = await client.GetAsync(string.Empty);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -666,7 +646,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                             Assert.Null(value);
                             Assert.Equal(string.Empty, context.Session.Id);
                             Assert.False(context.Session.Keys.Any());
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -876,7 +856,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             context.Session.SetInt32("key", 0);
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -944,7 +924,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             context.Session.SetInt32("key", 0);
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>
@@ -1143,7 +1123,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         app.Run(context =>
                         {
                             // The middleware calls context.Session.CommitAsync() once per request
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         });
                     })
                     .ConfigureServices(services =>

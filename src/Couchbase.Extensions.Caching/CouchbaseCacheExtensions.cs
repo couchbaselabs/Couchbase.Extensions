@@ -164,7 +164,7 @@ namespace Couchbase.Extensions.Caching
         /// <returns></returns>
         static ValueTask<ICouchbaseCollection> GetCollectionAsync(IDistributedCache cache)
         {
-            if (!(cache is ICouchbaseCache couchbaseCache))
+            if (cache is not ICouchbaseCache couchbaseCache)
             {
                 throw new NotSupportedException("The IDistributedCache must be a CouchbaseCache.");
             }
@@ -179,7 +179,7 @@ namespace Couchbase.Extensions.Caching
         /// <returns></returns>
         public static TimeSpan GetLifetime(IDistributedCache cache, DistributedCacheEntryOptions? itemOptions = null)
         {
-            if (!(cache is ICouchbaseCache couchbaseCache))
+            if (cache is not ICouchbaseCache couchbaseCache)
             {
                 throw new NotSupportedException("The IDistributedCache must be a CouchbaseCache.");
             }

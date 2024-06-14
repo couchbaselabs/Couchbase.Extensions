@@ -2,49 +2,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net6.0</TargetFrameworks>
-    <AssemblyName>Couchbase.Extensions.Session.UnitTests</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <PackageId>Couchbase.Extensions.Session.UnitTests</PackageId>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeIdentifiers>win10-x64;win8-x64</RuntimeIdentifiers>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <LangVersion>8</LangVersion>
+	  <TargetFrameworks>net8.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="BucketItem.cs" />
-    <Compile Remove="FakeCollection.cs" />
-    <Compile Remove="FakeCouchbaseBucketProvider.cs" />
-    <Compile Remove="FakeCouchbaseCacheBucketProvider.cs" />
-    <Compile Remove="FakeCouchbaseCacheCollectionProvider.cs" />
-    <Compile Remove="FakeExistsResult.cs" />
-    <Compile Remove="FakeGetResult.cs" />
-    <Compile Remove="FakeMutationResult.cs" />
-    <Compile Remove="FauxBucket.cs" />
-    <Compile Remove="FauxCouchbaseCache.cs" />
-    <Compile Remove="FauxOperationResult.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Couchbase.Extensions.Session\Couchbase.Extensions.Session.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="fm.Extensions.Logging.Testing" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="6.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
-    <PackageReference Include="xunit" Version="2.4.2" />
-    <PackageReference Include="Moq" Version="4.18.2" />
-	<PackageReference Include="fm.Extensions.Logging.Testing" Version="4.2.0" />
   </ItemGroup>
 
 </Project>

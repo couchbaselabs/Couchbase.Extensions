@@ -21,20 +21,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Sessio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{3C4744F1-A4B6-46A1-95FB-14B7B4CDB181}"
 	ProjectSection(SolutionItems) = preProject
-		docs\caching.md = docs\caching.md
 		docs\dependency-injection.md = docs\dependency-injection.md
 		docs\dns-srv.md = docs\dns-srv.md
 		encryption.md = encryption.md
-		docs\session.md = docs\session.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Identity", "src\Couchbase.Extensions.Identity\Couchbase.Extensions.Identity.csproj", "{68E6BEC6-B0F9-420E-9477-C175CCD54DF7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.IdentityUnitTests", "tests\Couchbase.Extensions.IdentityUnitTests\Couchbase.Extensions.IdentityUnitTests.csproj", "{10C4D39D-F384-4E57-8F1A-146DF0D718EF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{58E7557B-D434-402A-9B6B-0DBE59E8DF3B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Identity.Example", "example\Couchbase.Extensions.Identity.Example\Couchbase.Extensions.Identity.Example.csproj", "{C603698C-CBD8-4B07-A43C-37F507D925C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Locks", "src\Couchbase.Extensions.Locks\Couchbase.Extensions.Locks.csproj", "{AB7D1460-4C72-45FA-8939-38C32C905AE8}"
 EndProject
@@ -52,9 +44,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Compre
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Compression.Snappier.IntegrationTests", "tests\Couchbase.Extensions.Compression.Snappier.IntegrationTests\Couchbase.Extensions.Compression.Snappier.IntegrationTests.csproj", "{5AA07C99-EC7E-442D-A3EE-B8A373E0C278}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Session.Example", "..\temp\Couchbase.Extensions\example\Couchbase.Extensions.Session.Example\Couchbase.Extensions.Session.Example.csproj", "{2002815D-BB04-4EE7-A671-D2A8A4E0A498}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Session.Example", "example\Couchbase.Extensions.Session.Example\Couchbase.Extensions.Session.Example.csproj", "{2002815D-BB04-4EE7-A671-D2A8A4E0A498}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.Caching.Example", "example\Couchbase.Extensions.Caching.Example\Couchbase.Extensions.Caching.Example.csproj", "{02FC8C26-DD40-4944-B897-B30598F8BC58}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{033F99FC-ACB7-4EDE-A1F5-3D0577613751}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		NuGet.Config = NuGet.Config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,18 +85,6 @@ Global
 		{14E1822C-F365-48FF-B265-7D679607872E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14E1822C-F365-48FF-B265-7D679607872E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14E1822C-F365-48FF-B265-7D679607872E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{68E6BEC6-B0F9-420E-9477-C175CCD54DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{68E6BEC6-B0F9-420E-9477-C175CCD54DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{68E6BEC6-B0F9-420E-9477-C175CCD54DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{68E6BEC6-B0F9-420E-9477-C175CCD54DF7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{10C4D39D-F384-4E57-8F1A-146DF0D718EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10C4D39D-F384-4E57-8F1A-146DF0D718EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10C4D39D-F384-4E57-8F1A-146DF0D718EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10C4D39D-F384-4E57-8F1A-146DF0D718EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C603698C-CBD8-4B07-A43C-37F507D925C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C603698C-CBD8-4B07-A43C-37F507D925C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C603698C-CBD8-4B07-A43C-37F507D925C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C603698C-CBD8-4B07-A43C-37F507D925C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AB7D1460-4C72-45FA-8939-38C32C905AE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AB7D1460-4C72-45FA-8939-38C32C905AE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB7D1460-4C72-45FA-8939-38C32C905AE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -149,9 +136,6 @@ Global
 		{1F91B9B9-DF56-4F73-B593-B080272B620D} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 		{DC727A08-3988-4B71-8362-1F7870B87157} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 		{14E1822C-F365-48FF-B265-7D679607872E} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
-		{68E6BEC6-B0F9-420E-9477-C175CCD54DF7} = {EC47DFB9-AB39-41F8-BD7C-7B25BBCDEBD1}
-		{10C4D39D-F384-4E57-8F1A-146DF0D718EF} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
-		{C603698C-CBD8-4B07-A43C-37F507D925C9} = {58E7557B-D434-402A-9B6B-0DBE59E8DF3B}
 		{AB7D1460-4C72-45FA-8939-38C32C905AE8} = {EC47DFB9-AB39-41F8-BD7C-7B25BBCDEBD1}
 		{2EB84E99-15FC-4A7E-B42D-E45BB0A8D198} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 		{5E042A12-E803-494C-B90C-6DF048AF73BD} = {58E7557B-D434-402A-9B6B-0DBE59E8DF3B}

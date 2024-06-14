@@ -61,7 +61,7 @@ namespace Couchbase.Extensions.MultiOp
         public static IObservable<MultiOpResult> Unlock<T>(this ICouchbaseCollection collection,
             IEnumerable<KeyValuePair<string, ulong>> items, UnlockOptions? unlockOptions, MultiOpOptions? multiOpOptions = null) =>
             Multi.ObserveMulti(items,
-                item => collection.UnlockAsync<T>(item.Key, item.Value, unlockOptions),
+                item => collection.UnlockAsync(item.Key, item.Value, unlockOptions),
                 multiOpOptions);
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Couchbase.Extensions.MultiOp
             IEnumerable<KeyValuePair<string, ulong>> items, Func<string, UnlockOptions?> optionsFactory,
             MultiOpOptions? multiOpOptions = null) =>
             Multi.ObserveMulti(items,
-                item => collection.UnlockAsync<T>(item.Key, item.Value, optionsFactory(item.Key)),
+                item => collection.UnlockAsync(item.Key, item.Value, optionsFactory(item.Key)),
                 multiOpOptions);
     }
 }

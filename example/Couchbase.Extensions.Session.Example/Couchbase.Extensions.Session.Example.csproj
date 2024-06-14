@@ -1,18 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Couchbase.Extensions.Caching\Couchbase.Extensions.Caching.csproj" />
     <ProjectReference Include="..\..\src\Couchbase.Extensions.Session\Couchbase.Extensions.Session.csproj" />
   </ItemGroup>
-
-
 
 </Project>

@@ -136,7 +136,7 @@ namespace Couchbase.Extensions.Locks.Internal
 
                 throw new CouchbaseLockUnavailableException(Name)
                 {
-                    Holder = getResult.ContentAs<LockDocument>().Holder
+                    Holder = getResult.ContentAs<LockDocument>()!.Holder
                 };
             }
         }

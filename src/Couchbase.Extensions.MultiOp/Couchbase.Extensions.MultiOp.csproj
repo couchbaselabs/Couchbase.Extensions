@@ -1,30 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;</TargetFrameworks>
-    <LangVersion>9</LangVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
     <Description>Provides extensions for ICouchbaseCollection to perform multiple similar operations in parallel. For example, getting 100 documents based on their keys or performing a bulk insert of 100,000 documents. It is optimized to maximize throughput by limiting the degree of parallelization and to returning exceptions separately for each operation.</Description>
-    <Authors>Brant Burnett, Couchbase Inc.</Authors>
-    <Company>Couchbase Inc.</Company>
-    <Copyright>Couchbase, Inc. 2021</Copyright>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/couchbaselabs/Couchbase.Extensions/blob/master/docs/multi-op.md</PackageProjectUrl>
-    <PackageIcon>couchbase.png</PackageIcon>
-    <RepositoryUrl>https://github.com/couchbaselabs/Couchbase.Extensions</RepositoryUrl>
     <PackageTags>nosql, reactive, rx, json, database, couchbase</PackageTags>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="CouchbaseNetClient" Version="3.3.4" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="CouchbaseNetClient" />
+    <PackageReference Include="System.Reactive" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="couchbase.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
+    <None Include="..\..\docs\multi-op.md" Pack="true" PackagePath="\README.md" />
   </ItemGroup>
+
 </Project>
