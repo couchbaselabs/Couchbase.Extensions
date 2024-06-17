@@ -75,35 +75,6 @@ namespace Couchbase.Extensions.Caching
         }
 
         /// <summary>
-        /// Gets a cache item by its key asynchronously, returning null if the item does not exist within the Cache.
-        /// </summary>
-        /// <param name="key">The key to lookup the item.</param>
-        /// <param name="token">The <see cref="CancellationToken"/> for the operation.</param>
-        /// <returns>The cache item if found, otherwise null.</returns>
-        async Task<byte[]?> IDistributedCache.GetAsync(string key, CancellationToken token)
-        {
-            token.ThrowIfCancellationRequested();
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            var collection = await CollectionProvider.GetCollectionAsync().ConfigureAwait(false);
-
-            try
-            {
-                var result = await collection.GetAndTouchAsync(key, Options.LifeSpan.GetValueOrDefault(),
-                        new GetAndTouchOptions().Transcoder(_transcoder))
-                    .ConfigureAwait(false);
-                return result.ContentAs<byte[]>();
-            }
-            catch (DocumentNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Sets a cache item using its key. If the key exists, it will not be updated.
         /// </summary>
         /// <param name="key">The key for the cache item.</param>
