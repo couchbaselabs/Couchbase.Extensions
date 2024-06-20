@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Couchbase.Extensions.Caching.Internal;
 using Couchbase.Extensions.DependencyInjection;
 using Microsoft.Extensions.Caching.Distributed;
@@ -16,23 +15,29 @@ namespace Couchbase.Extensions.Caching
         /// <param name="services">The <see cref="IServiceCollection"/> to add the <see cref="CouchbaseCache"/> service to.</param>
         /// <param name="setupAction">The setup delegate that will be fired when the service is created.</param>
         /// <returns>The <see cref="IServiceCollection"/> that was updated with the <see cref="Action{CouchbaseCacheOptions}"/></returns>
-        public static IServiceCollection AddDistributedCouchbaseCache(this IServiceCollection services, Action<CouchbaseCacheOptions> setupAction)
+        public static IServiceCollection AddDistributedCouchbaseCache(this IServiceCollection services,
+            Action<CouchbaseCacheOptions>? setupAction = null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (setupAction == null)
-            {
-                throw new ArgumentNullException(nameof(setupAction));
-            }
+            ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAddSingleton<ICouchbaseCacheCollectionProvider, DefaultCouchbaseCacheCollectionProvider>();
             services.AddOptions();
-            services.Configure(setupAction);
+            if (setupAction is not null)
+            {
+                services.Configure(setupAction);
+            }
 
-            var descriptor = services.FirstOrDefault(x => x.ServiceType == typeof(IDistributedCache));
-            if (descriptor != null) services.Remove(descriptor);
+            services.TryAddCouchbaseBucket<ICouchbaseCacheBucketProvider, DefaultCouchbaseCacheBucketProvider>(bucketBuilder =>
+            {
+                bucketBuilder.AddCollection<ICouchbaseCacheCollectionProvider, DefaultCouchbaseCacheCollectionProvider>();
+            });
+
+            // Replace any already registered IDistributedCache. Forward requests to the singleton
+            // ICouchbaseCache instance. This is registered as transient in case the consumer has registered
+            // a custom ICouchbaseCache implementation that is not a singleton.
+            services.RemoveAll<IDistributedCache>();
+            services.AddTransient<IDistributedCache>(
+                static serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
+
             services.TryAddSingleton<ICouchbaseCache, CouchbaseCache>();
 
             return services;
@@ -45,32 +50,14 @@ namespace Couchbase.Extensions.Caching
         /// <param name="bucketName">The bucket name that the cache will use.</param>
         /// <param name="setupAction">The setup delegate that will be fired when the service is created.</param>
         /// <returns>The <see cref="IServiceCollection"/> that was updated with the <see cref="Action{CouchbaseCacheOptions}"/></returns>
-        public static IServiceCollection AddDistributedCouchbaseCache(this IServiceCollection services, string bucketName, Action<CouchbaseCacheOptions> setupAction)
+        [Obsolete("Use the overload that accepts an Action<CouchbaseCacheOptions> instead, setting the bucket name in the callback.")]
+        public static IServiceCollection AddDistributedCouchbaseCache(this IServiceCollection services, string bucketName, Action<CouchbaseCacheOptions>? setupAction = null)
         {
-            if (services == null)
+            return services.AddDistributedCouchbaseCache(options =>
             {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (setupAction == null)
-            {
-                throw new ArgumentNullException(nameof(setupAction));
-            }
-
-            services.AddCouchbaseBucket<ICouchbaseCacheBucketProvider>(bucketName);
-            services.TryAddSingleton<ICouchbaseCacheCollectionProvider, DefaultCouchbaseCacheCollectionProvider>();
-
-            services.AddOptions();
-            services.Configure(setupAction);
-
-            var distCacheDescriptor = services.FirstOrDefault(x => x.ServiceType == typeof(IDistributedCache));
-            if (distCacheDescriptor != null) services.Remove(distCacheDescriptor);
-            services.TryAddSingleton<IDistributedCache, CouchbaseCache>();
-
-            var couchbaseCachedescriptor = services.FirstOrDefault(x => x.ServiceType == typeof(ICouchbaseCache));
-            if (couchbaseCachedescriptor != null) services.Remove(couchbaseCachedescriptor);
-            services.TryAddSingleton<ICouchbaseCache, CouchbaseCache>();
-
-            return services;
+                options.BucketName = bucketName;
+                setupAction?.Invoke(options);
+            });
         }
     }
 }

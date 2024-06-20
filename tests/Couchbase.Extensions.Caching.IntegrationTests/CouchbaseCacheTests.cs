@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
-using Couchbase.Core.Exceptions.KeyValue;
-using Couchbase.Core.IO.Transcoders;
+using Couchbase.Extensions.Caching.Internal;
 using Couchbase.KeyValue;
 using Microsoft.Extensions.Caching.Distributed;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Couchbase.Extensions.Caching.IntegrationTests
@@ -14,7 +12,6 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
     public class CouchbaseCacheTests : IClassFixture<ClusterFixture>
     {
         private readonly ClusterFixture _fixture;
-        private readonly ITypeTranscoder _transcoder = new LegacyTranscoder();
 
         public CouchbaseCacheTests(ClusterFixture fixture)
         {
@@ -22,115 +19,77 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         }
 
         [Fact]
-        public async Task Test_Set()
+        public void Test_SetAndGet_Bytes()
         {
             var cache = GetCache();
 
-            var collection = await _fixture.GetDefaultCollectionAsync();
+            const string key = $"CouchbaseCacheTests.{nameof(Test_SetAndGet_Bytes)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
+
+            cache.Remove(key);
+            cache.Set(key, bytes, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15)
+            });
+            var result = cache.Get(key);
+
+            Assert.Equal(bytes, result);
+        }
+
+        [Fact]
+        public async Task Test_SetAndGetAsync_Bytes()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_SetAndGetAsync_Bytes)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
+
+            await cache.RemoveAsync(key);
+            await cache.SetAsync(key, bytes, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15)
+            });
+            var result = await cache.GetAsync(key);
+
+            Assert.Equal(bytes, result);
+        }
+
+        [Fact]
+        public async Task Test_SetAndGetAsync_Poco()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_SetAndGetAsync_Poco)}";
             var poco = new Poco {Name = "poco1", Age = 12};
-            const string key = "CouchbaseCacheTests.Test_Set";
 
-            try
+            await cache.RemoveAsync(key);
+            await cache.SetAsync(key, poco, new DistributedCacheEntryOptions
             {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(15)
+            });
+            var result = await cache.GetAsync<Poco>(key);
 
-            cache.Set(key, GetBytes(poco), null);
-
-            var result = await collection.GetAsync(key, new GetOptions().Transcoder(_transcoder));
-            var actual = GetObject<Poco>(result.ContentAs<byte[]>());
-
-            Assert.Equal(actual.ToString(), poco.ToString());
+            Assert.Equal(poco.Name, result.Name);
         }
 
         [Fact]
-        public async Task Test_SetAsync()
+        public void Test_Get_MissingBytes()
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_SetAsync";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await cache.SetAsync(key, GetBytes(poco), null);
-
-            var result = await collection.GetAsync(key, new GetOptions().Transcoder(_transcoder));
-            var actual = GetObject<Poco>(result.ContentAs<byte[]>());
-
-            Assert.Equal(actual.ToString(), poco.ToString());
-        }
-
-        [Fact]
-        public async Task Test_Get()
-        {
-            var cache = GetCache();
-
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_Get";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await collection.InsertAsync(key, GetBytes(poco), new InsertOptions().Transcoder(_transcoder));
+            const string key = $"CouchbaseCacheTests.{nameof(Test_Get_MissingBytes)}";
 
             var bytes = cache.Get(key);
-            var actual = GetObject<Poco>(bytes);
 
-            Assert.Equal(actual.ToString(), poco.ToString());
+            Assert.Null(bytes);
         }
 
         [Fact]
-        public async Task Test_GetAsync()
+        public async Task Test_GetAsync_MissingBytes()
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_GetAsync";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await collection.InsertAsync(key, GetBytes(poco), new InsertOptions().Transcoder(_transcoder));
-
-            var bytes = await cache.GetAsync(key);
-            var actual = GetObject<Poco>(bytes);
-
-            Assert.Equal(actual.ToString(), poco.ToString());
-        }
-
-        [Fact]
-        public async Task Test_GetAsync_Missing()
-        {
-            var cache = GetCache();
-
-            const string key = "CouchbaseCacheTests.Test_GetAsync_Missing";
+            const string key = $"CouchbaseCacheTests.{nameof(Test_GetAsync_MissingBytes)}";
 
             var bytes = await cache.GetAsync(key);
 
@@ -138,28 +97,30 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         }
 
         [Fact]
-        public async Task Test_Remove()
+        public async Task Test_GetAsync_MissingPoco()
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_Remove";
-            var collection = await _fixture.GetDefaultCollectionAsync();
+            const string key = $"CouchbaseCacheTests.{nameof(Test_GetAsync_MissingPoco)}";
 
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
+            var bytes = await cache.GetAsync<Poco>(key);
 
-            await collection.InsertAsync(key, GetBytes(poco), new InsertOptions().Transcoder(_transcoder));
+            Assert.Null(bytes);
+        }
 
+        [Fact]
+        public void Test_Remove()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_Remove)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
+
+            cache.Set(key, bytes);
             cache.Remove(key);
+            var result = cache.Get(key);
 
-            await Assert.ThrowsAsync<DocumentNotFoundException>(() => collection.GetAsync(key));
+            Assert.Null(result);
         }
 
         [Fact]
@@ -167,24 +128,24 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_RemoveAsync";
-            var collection = await _fixture.GetDefaultCollectionAsync();
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RemoveAsync)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
 
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await collection.InsertAsync(key, GetBytes(poco), new InsertOptions().Transcoder(_transcoder));
-
+            await cache.SetAsync(key, bytes);
             await cache.RemoveAsync(key);
+            var result = await cache.GetAsync(key);
 
-            await Assert.ThrowsAsync<DocumentNotFoundException>(() => collection.GetAsync(key));
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void Test_Remove_Missing()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RemoveAsync)}";
+
+            cache.Remove(key);
         }
 
         [Fact]
@@ -192,171 +153,118 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
         {
             var cache = GetCache();
 
-            const string key = "CouchbaseCacheTests.Test_RemoveAsync_Missing";
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RemoveAsync)}";
 
             await cache.RemoveAsync(key);
         }
 
         [Fact]
-        public async Task Test_Refresh()
+        public void Test_Refresh_Missing()
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_Refresh";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await collection.InsertAsync(key, GetBytes(poco),
-                new InsertOptions().Transcoder(_transcoder).Expiry(new TimeSpan(0, 0, 0, 2)));
+            const string key = $"CouchbaseCacheTests.{nameof(Test_Refresh_Missing)}";
 
             cache.Refresh(key);
-
-            await Task.Delay(2000);
-            await collection.GetAsync(key);
         }
 
         [Fact]
-        public async Task Test_RefreshAsync()
+        public async Task Test_RefreshAsync_Missing()
         {
             var cache = GetCache();
 
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_RefreshAsync";
-            var collection = await _fixture.GetDefaultCollectionAsync();
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RefreshAsync_Missing)}";
 
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
+            await cache.RefreshAsync(key);
+        }
 
-            await collection.InsertAsync(key, GetBytes(poco),
-                new InsertOptions().Transcoder(_transcoder).Expiry(new TimeSpan(0, 0, 0, 2)));
+        [Fact]
+        public async Task Test_RefreshAsync_SlidesExpiration()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RefreshAsync_SlidesExpiration)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
+
+            await cache.SetAsync(key, bytes, new DistributedCacheEntryOptions {
+                SlidingExpiration = TimeSpan.FromSeconds(2)
+            });
+
+            await Task.Delay(1000);
+
+            await cache.RefreshAsync(key);
+
+            await Task.Delay(1000);
+
+            var result = await cache.GetAsync(key);
+
+            Assert.Equal(bytes, result);
+        }
+
+        [Fact]
+        public async Task Test_RefreshAsync_DoesNotSlidePastAbsoluteExpiration()
+        {
+            var cache = GetCache();
+
+            const string key = $"CouchbaseCacheTests.{nameof(Test_RefreshAsync_SlidesExpiration)}";
+            var bytes = Enumerable.Range(1, 64).Select(p => (byte) p).ToArray();
+
+            await cache.SetAsync(key, bytes, new DistributedCacheEntryOptions {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2),
+                SlidingExpiration = TimeSpan.FromSeconds(5)
+            });
+
+            await Task.Delay(1000);
 
             await cache.RefreshAsync(key);
 
             await Task.Delay(2000);
-            await collection.GetAsync(key);
+
+            var result = await cache.GetAsync(key);
+
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task Test_Refresh_WithTimeSpan()
-        {
-            var cache = GetCache(new TimeSpan(0,0,0,4));
-
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_Refresh";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            await collection.InsertAsync(key, GetBytes(poco),
-                new InsertOptions().Transcoder(_transcoder).Expiry(new TimeSpan(0, 0, 0, 2)));
-
-            cache.Refresh(key);
-
-            await Task.Delay(2000);
-            await collection.GetAsync(key);
-        }
-
-        [Fact]
-        public async Task Test_RefreshAsync_WithTimeSpan()
-        {
-            var cache = GetCache(new TimeSpan(0, 0, 0, 4));
-
-            var poco = new Poco { Name = "poco1", Age = 12 };
-            const string key = "CouchbaseCacheTests.Test_RefreshAsync_WithTimeSpan";
-            var collection = await _fixture.GetDefaultCollectionAsync();
-
-            try
-            {
-                await collection.RemoveAsync(key);
-            }
-            catch (DocumentNotFoundException)
-            {
-                // Ignore
-            }
-
-            var v = await collection.InsertAsync(key, GetBytes(poco),
-                new InsertOptions().Transcoder(_transcoder).Expiry(new TimeSpan(0, 0, 0, 2)));
-
-            await cache.RefreshAsync(key);
-
-            await Task.Delay(2000);
-            await collection.GetAsync(key, new GetOptions().Transcoder(_transcoder));
-        }
-
-        [Fact]
-        public async Task Test_SetAsync_With_Absolute_Expires_After_2Seconds()
+        public async Task Test_SetAsync_With_AbsoluteExpirationRelativeToNow_Expires()
         {
             var cache = GetCache();
-            var docKey = "Test_SetAsync_With_Absolute_Expires_After_2Seconds";
-            await cache.SetAsync(docKey, "some cache value", new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2)
-                });
-            await Task.Delay(3000);
-
-            var collection = await _fixture.GetDefaultCollectionAsync();
-            await Assert.ThrowsAsync<DocumentNotFoundException>(() => collection.GetAsync(docKey, new GetOptions().Transcoder(_transcoder)));
-        }
-
-        [Fact]
-        public async Task Test_SetAsync_With_Absolute()
-        {
-            var cache = GetCache();
-            var docKey = "Test_SetAsync_With_Absolute";
-            await cache.SetAsync(docKey, "some cache value", new DistributedCacheEntryOptions
+            const string key = $"CouchbaseCacheTests.{nameof(Test_SetAsync_With_AbsoluteExpirationRelativeToNow_Expires)}";
+            await cache.SetAsync(key, "some cache value", new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2)
             });
+            await Task.Delay(3000);
 
-            var collection = await _fixture.GetDefaultCollectionAsync();
-            await collection.GetAsync(docKey, new GetOptions().Transcoder(_transcoder));
+            var result = await cache.GetAsync(key);
+
+            Assert.Null(result);
         }
 
-        static byte[] GetBytes(Poco poco)
+        [Fact]
+        public async Task Test_SetAsync_With_AbsoluteExpiration_Expires()
         {
-            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(poco));
-        }
-
-        static T GetObject<T>(byte[] bytes)
-        {
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
-        }
-
-        private CouchbaseCache GetCache(TimeSpan? timeSpan = null)
-        {
-            var options = new CouchbaseCacheOptions
+            var cache = GetCache();
+            const string key = $"CouchbaseCacheTests.{nameof(Test_SetAsync_With_AbsoluteExpiration_Expires)}";
+            await cache.SetAsync(key, "some cache value", new DistributedCacheEntryOptions
             {
-                LifeSpan = timeSpan
-            };
+                AbsoluteExpiration = DateTimeOffset.UtcNow.AddSeconds(2)
+            });
+            await Task.Delay(3000);
 
+            var result = await cache.GetAsync(key);
+
+            Assert.Null(result);
+        }
+
+        private CouchbaseCache GetCache()
+        {
             var provider = new Mock<ICouchbaseCacheCollectionProvider>();
             provider
                 .Setup(x => x.GetCollectionAsync())
                 .Returns(() => new ValueTask<ICouchbaseCollection>(_fixture.GetDefaultCollectionAsync()));
 
-            return new CouchbaseCache(provider.Object, options);
+            return new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
         }
 
         public class Poco

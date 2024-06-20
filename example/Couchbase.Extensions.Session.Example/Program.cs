@@ -17,7 +17,9 @@ builder.Services.AddCouchbase(opt =>
 });
 
 builder.Services
-    .AddDistributedCouchbaseCache("default", opt => { })
+    .AddDistributedCouchbaseCache(opt => {
+        opt.BucketName = "default";
+    })
     .AddCouchbaseSession();
 
 var app = builder.Build();

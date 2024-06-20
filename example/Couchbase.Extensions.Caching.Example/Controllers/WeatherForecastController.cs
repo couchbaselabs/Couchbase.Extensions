@@ -7,9 +7,9 @@ namespace Couchbase.Extensions.Caching.Example.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private IDistributedCache _cache;
+        private ICouchbaseCache _cache;
 
-        public WeatherForecastController(IDistributedCache cache, ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ICouchbaseCache cache, ILogger<WeatherForecastController> logger)
         {
             _cache = cache;
             _logger = logger;
@@ -22,10 +22,10 @@ namespace Couchbase.Extensions.Caching.Example.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public async Task<IEnumerable<WeatherForecast>> Get()
+        [HttpGet("WeatherForecast/AbsoluteExpiration", Name = "GetWeatherForecastAbsoluteExpiration")]
+        public async Task<IEnumerable<WeatherForecast>> GetAbsoluteExpiration()
         {
-            var weatherForcast = await _cache.GetAsync<IEnumerable<WeatherForecast>>("weatherForecast");
+            var weatherForcast = await _cache.GetAsync<IEnumerable<WeatherForecast>>("weatherForecastAbsolute");
 
             if(weatherForcast == null)
             {
@@ -37,8 +37,32 @@ namespace Couchbase.Extensions.Caching.Example.Controllers
                     Summary = Summaries[Random.Shared.Next(Summaries.Length)]
                 }).ToArray();
 
-                await _cache.SetAsync("weatherForecast", weatherForcast,
+                await _cache.SetAsync("weatherForecastAbsolute", weatherForcast,
                     new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
+
+                return weatherForcast;
+            }
+            _logger.LogInformation("Cache hit!");
+            return weatherForcast;
+        }
+
+        [HttpGet("WeatherForecast/SlidingExpiration", Name = "GetWeatherForecastSlidingExpiration")]
+        public async Task<IEnumerable<WeatherForecast>> GetSlidingExpiration()
+        {
+            var weatherForcast = await _cache.GetAsync<IEnumerable<WeatherForecast>>("weatherForecastSliding");
+
+            if(weatherForcast == null)
+            {
+                _logger.LogInformation("Cache miss!");
+                weatherForcast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+                {
+                    Date = DateTime.Now.AddDays(index),
+                    TemperatureC = Random.Shared.Next(-20, 55),
+                    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+                }).ToArray();
+
+                await _cache.SetAsync("weatherForecastSliding", weatherForcast,
+                    new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(10)));
 
                 return weatherForcast;
             }

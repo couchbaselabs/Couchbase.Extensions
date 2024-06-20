@@ -1,8 +1,5 @@
-﻿using System.Collections.Specialized;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using System.Linq;
 using Xunit;
 
 namespace Couchbase.Extensions.Caching.UnitTests
@@ -16,10 +13,10 @@ namespace Couchbase.Extensions.Caching.UnitTests
             var services = new ServiceCollection();
 
             // Act
-            services.AddDistributedCouchbaseCache("bucketName", options => { });
+            services.AddDistributedCouchbaseCache();
 
             // Assert
-            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
+            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(ICouchbaseCache));
 
             Assert.NotNull(distributedCache);
             Assert.Equal(ServiceLifetime.Singleton, distributedCache.Lifetime);
@@ -30,7 +27,7 @@ namespace Couchbase.Extensions.Caching.UnitTests
         {
             var services = new ServiceCollection();
 
-            Assert.Same(services, services.AddDistributedCouchbaseCache("bucketName", _ => { }));
+            Assert.Same(services, services.AddDistributedCouchbaseCache());
         }
     }
 }

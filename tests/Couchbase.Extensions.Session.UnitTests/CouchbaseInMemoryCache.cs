@@ -1,106 +1,209 @@
 ﻿using Couchbase.Extensions.Caching;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+#nullable enable
 
 namespace Couchbase.Extensions.Session.UnitTests
 {
     /// <summary>
     /// A "fake" cache for unit testing Couchbase caching.
     /// </summary>
-    internal class CouchbaseInMemoryCache : ICouchbaseCache
+    internal class CouchbaseInMemoryCache(TimeProvider timeProvider) : ICouchbaseCache
     {
-        private readonly IDistributedCache _cache;
+        private readonly Dictionary<string, CacheEntry> _cache = new();
 
-        public CouchbaseInMemoryCache(IDistributedCache cache)
-        {
-            _cache = cache;
-        }
         public bool DisableGet { get; set; }
-        public bool DisableSetAsync { get; set; }
-        public bool DisableRefreshAsync { get; set; }
+        public bool DisableSet { get; set; }
+        public bool DisableRefresh { get; set; }
+        public bool DisableRemove { get; set; }
+
         public bool DelayGetAsync { get; set; }
         public bool DelaySetAsync { get; set; }
         public bool DelayRefreshAsync { get; set; }
-        public ICouchbaseCacheCollectionProvider CollectionProvider { get; }
+        public bool DelayRemoveAsync { get; set; }
 
-        public CouchbaseCacheOptions Options { get; }
+        public byte[]? Get(string key) => GetCacheEntry<byte[]>(key)?.Value;
 
-        public byte[] Get(string key)
+        public async Task<T?> GetAsync<T>(string key, CancellationToken token = default)
         {
-            if (DisableGet)
-            {
-                throw new InvalidOperationException();
-            }
-            return _cache.Get(key);
-        }
-
-        public Task<byte[]> GetAsync(string key, CancellationToken token = default)
-        {
-            if (DisableGet)
-            {
-                throw new InvalidOperationException();
-            }
             if (DelayGetAsync)
             {
-                token.WaitHandle.WaitOne(TimeSpan.FromSeconds(10));
-                token.ThrowIfCancellationRequested();
+                await Task.Delay(TimeSpan.FromSeconds(10), timeProvider, token);
             }
-            return _cache.GetAsync(key, token);
+
+            token.ThrowIfCancellationRequested();
+
+            var entry = GetCacheEntry<T>(key);
+            return entry is not null ? entry.Value : default;
         }
 
-        public TimeSpan GetLifetime(DistributedCacheEntryOptions options = null)
-        {
-            return CouchbaseCacheExtensions.GetLifetime(this, options);
-        }
+        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) => GetAsync<byte[]>(key, token);
 
-        public void Refresh(string key)
-        {
-            _cache.Refresh(key);
-        }
+        public void Refresh(string key) => GetCacheEntry(key, forRefresh: true);
 
-        public Task RefreshAsync(string key, CancellationToken token = default)
+        public async Task RefreshAsync(string key, CancellationToken token = default)
         {
-            if (DisableRefreshAsync)
-            {
-                throw new InvalidOperationException();
-            }
             if (DelayRefreshAsync)
             {
-                token.WaitHandle.WaitOne(TimeSpan.FromSeconds(10));
-                token.ThrowIfCancellationRequested();
+                await Task.Delay(TimeSpan.FromSeconds(10), timeProvider, token);
             }
-            return _cache.RefreshAsync(key, token);
+
+            GetCacheEntry(key, forRefresh: true);
         }
 
-        public void Remove(string key)
-        {
-            _cache.Remove(key);
-        }
+        public void Remove(string key) => RemoveEntry(key);
 
-        public Task RemoveAsync(string key, CancellationToken token = default)
+        public async Task RemoveAsync(string key, CancellationToken token = default)
         {
-            return _cache.RemoveAsync(key, token);
+            if (DelayRemoveAsync)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), timeProvider, token);
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            RemoveEntry(key);
         }
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
-            _cache.Set(key, value, options);
+            SetEntry(key, value, options);
         }
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        public async Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions options, CancellationToken token = default)
         {
-            if (DisableSetAsync)
+            if (DelaySetAsync)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), timeProvider, token);
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            SetEntry(key, value, options);
+        }
+
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) =>
+            SetAsync<byte[]>(key, value, options, token);
+
+        #region Get/Set Helpers
+
+        private CacheEntry? GetCacheEntry(string key, bool forRefresh = false)
+        {
+            if (forRefresh)
+            {
+                if (DisableRefresh)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+            else if (DisableGet)
             {
                 throw new InvalidOperationException();
             }
-            if (DelaySetAsync)
+
+            if (!_cache.TryGetValue(key, out var entry))
             {
-                token.WaitHandle.WaitOne(TimeSpan.FromSeconds(10));
-                token.ThrowIfCancellationRequested();
+                return null;
             }
-            return _cache.SetAsync(key, value, options, token);
+
+            var now = timeProvider.GetUtcNow();
+            if (entry.AbsoluteExpiration != null && entry.AbsoluteExpiration.Value < now)
+            {
+                _cache.Remove(key);
+                return null;
+            }
+
+            if (entry.SlidingExpiration != null)
+            {
+                var newExpiration = now.Add(entry.SlidingExpiration.Value);
+                if (entry.AbsoluteExpiration is null || newExpiration < entry.AbsoluteExpiration)
+                {
+                    entry.AbsoluteExpiration = newExpiration;
+                }
+            }
+
+            return entry;
         }
+
+        private CacheEntry<T>? GetCacheEntry<T>(string key)
+        {
+            var entry = GetCacheEntry(key);
+
+            return (CacheEntry<T>?)entry;
+        }
+
+        private void SetEntry<T>(string key, T value, DistributedCacheEntryOptions options)
+        {
+            if (DisableSet)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var entry = new CacheEntry<T>(value)
+            {
+                AbsoluteExpiration = options.AbsoluteExpiration,
+                SlidingExpiration = options.SlidingExpiration,
+            };
+
+            var now = timeProvider.GetUtcNow();
+            if (options.AbsoluteExpirationRelativeToNow is not null)
+            {
+                var newAbsoluteExpiration = now.Add(options.AbsoluteExpirationRelativeToNow.Value);
+                if (entry.AbsoluteExpiration is null || entry.AbsoluteExpiration > newAbsoluteExpiration)
+                {
+                    entry.AbsoluteExpiration = newAbsoluteExpiration;
+                }
+            }
+
+            if (entry.SlidingExpiration is not null)
+            {
+                var newSlidingExpiration = now.Add(entry.SlidingExpiration.Value);
+                if (entry.AbsoluteExpiration is null || entry.AbsoluteExpiration > newSlidingExpiration)
+                {
+                    entry.AbsoluteExpiration = newSlidingExpiration;
+                }
+            }
+
+            if (entry.AbsoluteExpiration is not null && entry.AbsoluteExpiration <= now)
+            {
+                // Don't cache if already expired
+                return;
+            }
+
+            _cache[key] = entry;
+        }
+
+        private void RemoveEntry(string key)
+        {
+            if (DisableRemove)
+            {
+                throw new InvalidOperationException();
+            }
+
+            _cache.Remove(key);
+        }
+
+        #endregion
+
+        #region CacheEntry
+
+        private abstract class CacheEntry
+        {
+            public DateTimeOffset? AbsoluteExpiration { get; set; }
+            public TimeSpan? SlidingExpiration { get; init; }
+        }
+
+        private sealed class CacheEntry<T>(T value) : CacheEntry
+        {
+            public T Value { get; } = value;
+        }
+
+        #endregion
     }
 }

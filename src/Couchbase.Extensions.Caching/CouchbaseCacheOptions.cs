@@ -1,24 +1,36 @@
 ﻿using System;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
 namespace Couchbase.Extensions.Caching
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Options related to the Couchbase implementation of <see cref="IDistributedCache"/>.
+    /// </summary>
     public class CouchbaseCacheOptions : IOptions<CouchbaseCacheOptions>
     {
         /// <summary>
-        /// Twenty minute default for sliding expiration
+        /// Name of the bucket to use for the cache. Defaults to "cache".
         /// </summary>
-        public CouchbaseCacheOptions() => LifeSpan = new TimeSpan(0, 0, 20, 0);
+        public string BucketName { get; set; } = "cache";
 
         /// <summary>
-        /// The current <see cref="CouchbaseCacheOptions"/> instance.
+        /// Name of the scope to use for the cache. Defaults to the default scope.
         /// </summary>
-        public CouchbaseCacheOptions Value => this;
+        public string ScopeName { get; set; } = "_default";
 
         /// <summary>
-        /// The global lifespan for cache items. Sliding expiration is only supported and the default is 20 minutes.
+        /// Name of the collection to use for the cache. Defaults to the default collection.
         /// </summary>
-        public TimeSpan? LifeSpan { get; set; }
+        public string CollectionName { get; set; } = "_default";
+
+        /// <summary>
+        /// The default sliding expiration set for a cache entry if neither Absolute or SlidingExpiration has been set explicitly.
+        /// By default, its 20 minutes.
+        /// </summary>
+        public TimeSpan DefaultSlidingExpiration { get; set; } = TimeSpan.FromMinutes(20);
+
+        // Helper method to simply pass in a raw CouchbaseCacheOptions.
+        CouchbaseCacheOptions IOptions<CouchbaseCacheOptions>.Value => this;
     }
 }

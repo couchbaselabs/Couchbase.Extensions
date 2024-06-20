@@ -28,7 +28,11 @@ public void ConfigureServices(IServiceCollection services)
         opt.Password = "password";
     });
 
-    services.AddDistributedCouchbaseCache("default", opt => { });
+    services.AddDistributedCouchbaseCache(opt => { 
+        opt.BucketName = "cache";
+        opt.ScopeName = "my_service";
+        opt.CollectionName = "my_collection";
+    });
 }
 ```
 
@@ -36,31 +40,40 @@ You can change the `localhost` hostname to wherever you are hosting your Couchba
 
 ### Using Caching in your Controllers ###
 
-In your controller add a parameter for `IDistributedCache` to the constructor:
+In your controller add a parameter for `ICouchbaseCache` or `IDistributedCache` to the constructor.
+Using `IDistributedCache` will allow persistence of `byte[]` to the cache. `ICouchbaseCache` extends
+this functionality with additional methods for storing and retrieving typed objects.
 
 ```csharp
 public class HomeController : Controller
 {
-    private IDistributedCache _cache;
+    private ICouchbaseCache _cache;
 
-    public HomeController(IDistributedCache cache)
+    public HomeController(ICouchbaseCache cache)
     {
         _cache = cache;
     }
 
     public async Task<IActionResult> Index()
     {
-        await _cache.SetAsync("CacheTime", System.Text.Encoding.UTF8.GetBytes(DateTime.Now.ToString()));
+        await _cache.SetAsync("CacheTime", DateTimeOffset.Now);
         return View();
     }
 
     public IActionResult About()
     {
         ViewData["Message"] = "Your application description page. "
-                    + System.Text.Encoding.UTF8.GetString(_cache.Get("CacheTime"));
+                    + (await _cache.GetAsync<DateTimeOffset>("CacheTime"));
         return View();
     }
 }
 ```
 
-For performance reasons, we strongly recommend using the Async overloads and not the sychronous methods on IDistributeCache.
+For performance reasons, we strongly recommend using the Async overloads and not the synchronous methods on IDistributeCache.
+
+## Serialization and Transcoding ##
+
+Any type you persist in the cache will be transcoded and serialized using the transcoder and serializer
+configured in the call to `AddCouchbase`. By default, this is the `JsonTranscoder` and the `DefaultSerializer`
+which uses Newtonsoft.Json. However, setting and getting `byte[]` is always transcoded as raw binary regardless
+of the configured transcoder.

@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Couchbase.Core;
 using Couchbase.Core.Exceptions.KeyValue;
+using Couchbase.Core.IO.Transcoders;
+using Couchbase.Extensions.Caching.Internal;
 using Couchbase.KeyValue;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -10,6 +14,8 @@ namespace Couchbase.Extensions.Caching.UnitTests
 {
     public class CouchbaseCacheTests
     {
+        #region Set
+
         [Fact]
         public void Set_WhenKeyIsNull_ThrowArgumentNullException()
         {
@@ -17,7 +23,7 @@ namespace Couchbase.Extensions.Caching.UnitTests
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
 
-            Assert.Throws<ArgumentNullException>(() => cache.Set(null, new byte[0], null));
+            Assert.Throws<ArgumentNullException>(() => cache.Set(null, Array.Empty<byte>(), null));
         }
 
         [Fact]
@@ -27,8 +33,36 @@ namespace Couchbase.Extensions.Caching.UnitTests
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
 
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.SetAsync(null, new byte[0], null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.SetAsync(null, Array.Empty<byte>(), null));
         }
+
+        [Fact]
+        public async Task SetAsync_AlreadyExpired_InvalidOperationException()
+        {
+            var collection = new Mock<ICouchbaseCollection>();
+            collection
+                .Setup(m => m.Scope.Bucket.Cluster.ClusterServices.GetService(typeof(ITypeTranscoder)))
+                .Returns(new JsonTranscoder());
+
+            var provider = new Mock<ICouchbaseCacheCollectionProvider>();
+            provider
+                .Setup(m => m.GetCollectionAsync())
+                .ReturnsAsync(collection.Object);
+
+            var timeProvider = new FakeTimeProvider()
+            {
+                AutoAdvanceAmount = TimeSpan.FromSeconds(1)
+            };
+
+            var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions(), timeProvider);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => cache.SetAsync("thekey", Array.Empty<byte>(), new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpiration = timeProvider.GetUtcNow()
+            }));
+        }
+
+        #endregion
 
         [Fact]
         public void Get_WhenKeyIsNull_ThrowArgumentNullException()
@@ -55,8 +89,11 @@ namespace Couchbase.Extensions.Caching.UnitTests
         {
             var collection = new Mock<ICouchbaseCollection>();
             collection
-                .Setup(m => m.GetAsync(It.IsAny<string>(), It.IsAny<GetOptions>()))
+                .Setup(m => m.LookupInAsync(It.IsAny<string>(), It.IsAny<IEnumerable<LookupInSpec>>(), It.IsAny<LookupInOptions>()))
                 .ThrowsAsync(new DocumentNotFoundException());
+            collection
+                .Setup(m => m.Scope.Bucket.Cluster.ClusterServices.GetService(typeof(ITypeTranscoder)))
+                .Returns(new JsonTranscoder());
 
             var provider = new Mock<ICouchbaseCacheCollectionProvider>();
             provider
@@ -65,7 +102,9 @@ namespace Couchbase.Extensions.Caching.UnitTests
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
 
-            await cache.GetAsync("key");
+            var result = await cache.GetAsync("key");
+
+            Assert.Null(result);
         }
 
         [Fact]
@@ -133,7 +172,7 @@ namespace Couchbase.Extensions.Caching.UnitTests
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
 
-            Assert.Throws<ArgumentNullException>(() => cache.Set(null, new byte[0], null));
+            Assert.Throws<ArgumentNullException>(() => cache.Set(null, Array.Empty<byte>(), null));
         }
 
         [Fact]
@@ -143,7 +182,7 @@ namespace Couchbase.Extensions.Caching.UnitTests
 
             var cache = new CouchbaseCache(provider.Object, new CouchbaseCacheOptions());
 
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.SetAsync(null, new byte[0], null));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.SetAsync(null, Array.Empty<byte>(), null));
         }
     }
 }

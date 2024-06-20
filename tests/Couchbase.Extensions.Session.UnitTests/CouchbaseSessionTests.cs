@@ -653,14 +653,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
                             DisableGet = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -711,7 +709,7 @@ namespace Couchbase.Extensions.Session.UnitTests
                         optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
 
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
                             DisableGet = true
                         });
@@ -761,14 +759,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
                             DelayGetAsync = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -863,14 +859,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
-                            DisableSetAsync = true
+                            DisableSet = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -930,16 +924,13 @@ namespace Couchbase.Extensions.Session.UnitTests
                     .ConfigureServices(services =>
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                        services.TryAddSingleton<ICouchbaseCache, CouchbaseInMemoryCache>();
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
-                        services.AddSingleton<IDistributedCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                        services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
+                            TimeProvider.System)
                         {
                             DelaySetAsync = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -1003,14 +994,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
                             DelaySetAsync = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -1073,14 +1062,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
                             DelaySetAsync = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
@@ -1130,14 +1117,12 @@ namespace Couchbase.Extensions.Session.UnitTests
                     {
                         services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
-                        var optionsMock = new Mock<IOptions<MemoryDistributedCacheOptions>>();
-                        optionsMock.Setup(x => x.Value).Returns(new MemoryDistributedCacheOptions());
-
                         services.AddSingleton<ICouchbaseCache>(new CouchbaseInMemoryCache(
-                            new MemoryDistributedCache(optionsMock.Object))
+                            TimeProvider.System)
                         {
-                            DisableRefreshAsync = true
+                            DisableRefresh = true
                         });
+                        services.AddTransient<IDistributedCache>(serviceProvider => serviceProvider.GetRequiredService<ICouchbaseCache>());
                         services.AddCouchbaseSession();
                     });
                 }).Build();
