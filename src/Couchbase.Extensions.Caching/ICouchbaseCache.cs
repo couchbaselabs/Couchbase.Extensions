@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Couchbase.Extensions.Caching
@@ -6,33 +7,28 @@ namespace Couchbase.Extensions.Caching
     /// <summary>
     /// Provides and interface for implementing a <see cref="IDistributedCache"/> using Couchbase server.
     /// </summary>
-    /// <seealso cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache" />
+    /// <seealso cref="IDistributedCache" />
     public interface ICouchbaseCache : IDistributedCache
     {
         /// <summary>
-        /// Provides the Couchbase collection as the backing store.
+        /// Gets a value with the given key.
         /// </summary>
-        /// <value>
-        /// The bucket.
-        /// </value>
-        ICouchbaseCacheCollectionProvider CollectionProvider { get; }
+        /// <typeparam name="T">Type of value.</typeparam>
+        /// <param name="key">A string identifying the requested value.</param>
+        /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the located value or null/default.</returns>
+        Task<T?> GetAsync<T>(string key, CancellationToken token = default);
 
         /// <summary>
-        /// Gets the options used by the Cache.
+        /// Sets a value with the given key.
         /// </summary>
-        /// <value>
-        /// The options.
-        /// </value>
-        CouchbaseCacheOptions Options { get; }
-
-        /// <summary>
-        /// Gets the lifetime or expiration from the <see cref="DistributedCacheEntryOptions"/>. Only
-        /// sliding expiration is currently supported. If <see cref="DistributedCacheEntryOptions.SlidingExpiration"/>
-        /// if not set, then the <see cref="CouchbaseCacheOptions.LifeSpan"/> will be used. If it is empty then the
-        /// default lifespan of zero (0) will be used which is infinite expiration; the default is 20 minutes.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        TimeSpan GetLifetime(DistributedCacheEntryOptions? options = null);
+        /// <typeparam name="T">Type of value.</typeparam>
+        /// <param name="key">A string identifying the requested value.</param>
+        /// <param name="value">The value to set in the cache.</param>
+        /// <param name="options">The cache options for the value.</param>
+        /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+        Task SetAsync<T>(string key, T value, DistributedCacheEntryOptions options,
+            CancellationToken token = default);
     }
 }
