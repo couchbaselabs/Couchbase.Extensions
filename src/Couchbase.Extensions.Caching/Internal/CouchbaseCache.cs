@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Couchbase.Extensions.Caching.Internal
 {
     /// <inheritdoc />
-    internal class CouchbaseCache : ICouchbaseCache
+    internal sealed class CouchbaseCache : ICouchbaseCache, IBufferDistributedCache
     {
         private const string CacheMetadataKey = "cache_config";
 
@@ -256,5 +257,77 @@ namespace Couchbase.Extensions.Caching.Internal
                 collection.Scope.Bucket.Cluster.ClusterServices.GetRequiredService<ITypeTranscoder>());
             return Interlocked.CompareExchange(ref _transcoder, transcoder, null) ?? transcoder;
         }
+
+        #region IBufferDistributedCache
+
+        public bool TryGet(string key, IBufferWriter<byte> destination)
+        {
+            var result = TryGetAsync(key, destination);
+
+            // Don't allocate a Task if already complete, but use AsTask for correctness when asynchronous
+            return result.IsCompleted
+                ? result.GetAwaiter().GetResult()
+                : result.AsTask().GetAwaiter().GetResult();
+        }
+
+        public async ValueTask<bool> TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken token = default)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+            token.ThrowIfCancellationRequested();
+
+            try
+            {
+                var collection = await _collectionProvider.GetCollectionAsync().ConfigureAwait(false);
+                using var result = await collection
+                    .LookupInAsync(key,
+                        builder =>
+                        {
+                            builder.GetFull();
+                            builder.Get(CacheMetadataKey, true);
+                        },
+                        new LookupInOptions().Transcoder(GetOrCreateTranscoder(collection)).CancellationToken(token))
+                    .ConfigureAwait(false);
+
+                if (result.Exists(1))
+                {
+                    var cacheMetadata = result.ContentAs<CacheMetadata>(1);
+
+                    // Push out the sliding expiration
+                    // Touch in the background, don't wait for completion and don't pass cancellation token
+                    _ = TouchAsync(collection, key, cacheMetadata, token: default);
+                }
+
+                // The result buffer is only valid until we dispose the result, but it's not being returned.
+                // It's copied to the destination buffer writer before the dispose.
+                var resultBuffer = result.ContentAs<CacheBuffer>(0);
+                destination.Write(resultBuffer.Data.Span);
+                return true;
+            }
+            catch (DocumentNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public void Set(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options)
+        {
+            var result = SetAsync(key, value, options);
+
+            // Don't allocate a Task if already complete, but use AsTask for correctness when asynchronous,
+            // and throw the exception if any
+            if (result.IsCompleted)
+            {
+                result.GetAwaiter().GetResult();
+            }
+            else
+            {
+                result.AsTask().GetAwaiter().GetResult();
+            }
+        }
+
+        public ValueTask SetAsync(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options, CancellationToken token = default) =>
+            new(SetAsync<ReadOnlySequence<byte>>(key, value, options, token));
+
+        #endregion
     }
 }

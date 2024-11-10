@@ -55,6 +55,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase", "..\couchbase-net-client\src\Couchbase\Couchbase.csproj", "{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Couchbase.Extensions.DependencyInjection", "..\couchbase-net-client\src\Couchbase.Extensions.DependencyInjection\Couchbase.Extensions.DependencyInjection.csproj", "{75845B26-4DEF-43B0-B503-1E00970CA212}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +129,14 @@ Global
 		{02FC8C26-DD40-4944-B897-B30598F8BC58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02FC8C26-DD40-4944-B897-B30598F8BC58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02FC8C26-DD40-4944-B897-B30598F8BC58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75845B26-4DEF-43B0-B503-1E00970CA212}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75845B26-4DEF-43B0-B503-1E00970CA212}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75845B26-4DEF-43B0-B503-1E00970CA212}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75845B26-4DEF-43B0-B503-1E00970CA212}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,6 +158,8 @@ Global
 		{5AA07C99-EC7E-442D-A3EE-B8A373E0C278} = {727F95F9-8FD9-423C-ACC6-B23E0D6CCC4C}
 		{2002815D-BB04-4EE7-A671-D2A8A4E0A498} = {58E7557B-D434-402A-9B6B-0DBE59E8DF3B}
 		{02FC8C26-DD40-4944-B897-B30598F8BC58} = {58E7557B-D434-402A-9B6B-0DBE59E8DF3B}
+		{EEDA3DFA-A2D5-4CFF-969A-C2D7736953DE} = {EC47DFB9-AB39-41F8-BD7C-7B25BBCDEBD1}
+		{75845B26-4DEF-43B0-B503-1E00970CA212} = {EC47DFB9-AB39-41F8-BD7C-7B25BBCDEBD1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE581CF-99BB-42AD-A7C8-59FF4B45DB55}

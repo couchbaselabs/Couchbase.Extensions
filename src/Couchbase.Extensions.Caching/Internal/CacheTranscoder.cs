@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using Couchbase.Core.IO.Operations;
 using Couchbase.Core.IO.Serializers;
@@ -50,6 +51,16 @@ namespace Couchbase.Extensions.Caching.Internal
 
         public void Encode<T>(Stream stream, T value, Flags flags, OpCode opcode)
         {
+            // This syntax supports JIT eliding for value types
+            if (typeof(T) == typeof(ReadOnlySequence<byte>))
+            {
+                var sequence = (ReadOnlySequence<byte>)(object)value!;
+                foreach (var memory in sequence)
+                {
+                    stream.Write(memory.Span);
+                }
+            }
+
             if (value is byte[] bytes)
             {
                 stream.Write(bytes, 0, bytes.Length);
@@ -66,9 +77,17 @@ namespace Couchbase.Extensions.Caching.Internal
 
         public T? Decode<T>(ReadOnlyMemory<byte> buffer, Flags flags, OpCode opcode)
         {
+            // This syntax supports JIT eliding for value types
+            if (typeof(T) == typeof(CacheBuffer))
+            {
+                // Special handling for IBufferDistributedCache, the returned sequence
+                // will only be valid until the returned ILookupInResponse is disposed.
+                return (T)(object)new CacheBuffer(buffer);
+            }
+
             if (typeof(T) == typeof(byte[]))
             {
-                return (T?)(object)buffer.ToArray();
+                return (T)(object)buffer.ToArray();
             }
 
             if (typeof(T) == typeof(CacheMetadata))
@@ -78,5 +97,5 @@ namespace Couchbase.Extensions.Caching.Internal
 
             return innerTranscoder.Decode<T>(buffer, flags, opcode);
         }
-  }
+    }
 }
