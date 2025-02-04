@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="CouchbaseNetClient" />
     <PackageReference Include="Couchbase.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" /> <!-- Pull in the upgraded version with IBufferDistributedCache -->
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">

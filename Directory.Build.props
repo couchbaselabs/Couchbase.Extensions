@@ -18,6 +18,8 @@
 
     <SignAssembly>False</SignAssembly>
     <AssemblyOriginatorKeyFile>C:\keys\Couchbase.snk</AssemblyOriginatorKeyFile>
+
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
