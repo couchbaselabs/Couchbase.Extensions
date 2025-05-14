@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Core.Exceptions;
 using Couchbase.Core.Exceptions.KeyValue;
-using Couchbase.Core.IO.Operations;
+using Couchbase.Core.IO.Serializers;
+using Couchbase.Core.IO.Transcoders;
 using Couchbase.KeyValue;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +14,9 @@ namespace Couchbase.Extensions.Locks.Internal
     /// <inheritdoc/>
     internal sealed class CouchbaseMutex : ICouchbaseMutex
     {
+        internal static readonly ITypeTranscoder Transcoder = new JsonTranscoder(
+            SystemTextJsonSerializer.Create(LockSerializerContext.Default));
+
         private readonly ICouchbaseCollection _collection;
         private readonly ILogger<CouchbaseMutex> _logger;
 
@@ -30,10 +32,15 @@ namespace Couchbase.Extensions.Locks.Internal
 
         public CouchbaseMutex(ICouchbaseCollection collection, string name, string holder, ILogger<CouchbaseMutex> logger)
         {
-            _collection = collection ?? throw new ArgumentNullException(nameof(collection));
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Holder = holder ?? throw new ArgumentNullException(nameof(holder));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(collection);
+            ArgumentNullException.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(holder);
+            ArgumentNullException.ThrowIfNull(logger);
+
+            _collection = collection;
+            Name = name;
+            Holder = holder;
+            _logger = logger;
         }
 
         /// <inheritdoc/>
@@ -61,7 +68,10 @@ namespace Couchbase.Extensions.Locks.Internal
                     _logger.LogDebug("Requesting lock '{name}' for holder '{holder}' for {expiration}", Name, Holder,
                         expiration);
                     result = await _collection.InsertAsync(key, document,
-                            new InsertOptions().Expiry(expiration).CancellationToken(cancellationToken))
+                            new InsertOptions()
+                                .Expiry(expiration)
+                                .Transcoder(Transcoder)
+                                .CancellationToken(cancellationToken))
                         .ConfigureAwait(false);
                 }
                 else
@@ -69,7 +79,11 @@ namespace Couchbase.Extensions.Locks.Internal
                     _logger.LogDebug("Renewing lock '{name}' for holder '{holder}' for {expiration}", Name, Holder,
                         expiration);
                     result = await _collection.ReplaceAsync(key, document,
-                            new ReplaceOptions().Expiry(expiration).CancellationToken(cancellationToken).Cas(_cas))
+                            new ReplaceOptions()
+                                .Expiry(expiration)
+                                .Transcoder(Transcoder)
+                                .CancellationToken(cancellationToken)
+                                .Cas(_cas))
                         .ConfigureAwait(false);
                 }
 
@@ -109,7 +123,11 @@ namespace Couchbase.Extensions.Locks.Internal
                 IGetResult getResult;
                 try
                 {
-                    getResult = await _collection.GetAsync(key).ConfigureAwait(false);
+                    getResult = await _collection.GetAsync(key,
+                        new GetOptions()
+                            .Transcoder(Transcoder)
+                            .CancellationToken(cancellationToken))
+                        .ConfigureAwait(false);
                 }
                 catch (DocumentNotFoundException)
                 {
@@ -117,7 +135,10 @@ namespace Couchbase.Extensions.Locks.Internal
                     {
                         // Couldn't find the lock, must have expired between Insert and Get, try one more time
                         result = await _collection.InsertAsync(key, document,
-                                new InsertOptions().Expiry(expiration).CancellationToken(cancellationToken))
+                                new InsertOptions()
+                                .Expiry(expiration)
+                                .Transcoder(Transcoder)
+                                .CancellationToken(cancellationToken))
                             .ConfigureAwait(false);
                     }
                     catch (DocumentExistsException)
