@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
 
     <Description>A custom ASP.NET Core Middleware plugin for distributed session state using Couchbase server as the backing store. Supports both Memcached (in-memory) and Couchbase (persistent) buckets.</Description>

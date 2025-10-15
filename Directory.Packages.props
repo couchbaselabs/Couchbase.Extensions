@@ -2,10 +2,9 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageVersion Include="CouchbaseNetClient" Version="3.6.5" />
-    <PackageVersion Include="Couchbase.Extensions.DependencyInjection" Version="3.6.5" />
+    <PackageVersion Include="CouchbaseNetClient" Version="3.8.0" />
+    <PackageVersion Include="Couchbase.Extensions.DependencyInjection" Version="3.8.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
@@ -13,7 +12,6 @@
     <PackageVersion Include="Snappier" Version="1.1.6" />
     <PackageVersion Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
-
   <!-- Tests -->
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
@@ -31,7 +29,6 @@
     <PackageVersion Include="xunit" Version="2.8.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.0" />
   </ItemGroup>
-
   <!-- Examples -->
   <ItemGroup>
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.1" />
