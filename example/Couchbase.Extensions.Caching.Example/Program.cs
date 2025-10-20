@@ -20,6 +20,15 @@ builder.Services.AddDistributedCouchbaseCache(opt => {
     opt.BucketName = "default";
 });
 
+builder.Services
+    .AddHybridCache(options =>
+    {
+        options.MaximumKeyLength = 250; // Maximum Couchbase key size
+        options.MaximumPayloadBytes = 20 * 1024 * 1024; // Maximum 20MB Couchbase document size
+        options.DisableCompression = true; // Prefer Snappy compression built into the Couchbase SDK
+    })
+    .AddSerializerFactory<CouchbaseCacheSerializerFactory>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

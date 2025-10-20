@@ -92,7 +92,6 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
             services.AddSingleton<ICouchbaseCacheCollectionProvider>(_fixture);
             services.AddDistributedCouchbaseCache();
 
-#pragma warning disable EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates.
             services
                 .AddHybridCache(options =>
                 {
@@ -101,7 +100,6 @@ namespace Couchbase.Extensions.Caching.IntegrationTests
                     options.DisableCompression = true; // Prefer Snappy compression built into the Couchbase SDK
                 })
                 .AddSerializerFactory<CouchbaseCacheSerializerFactory>();
-#pragma warning restore EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
             return services.BuildServiceProvider(new ServiceProviderOptions()
             {

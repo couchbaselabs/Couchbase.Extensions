@@ -60,8 +60,7 @@ namespace Couchbase.Extensions.Caching.Internal
                     stream.Write(memory.Span);
                 }
             }
-
-            if (value is byte[] bytes)
+            else if (value is byte[] bytes)
             {
                 stream.Write(bytes, 0, bytes.Length);
             }
