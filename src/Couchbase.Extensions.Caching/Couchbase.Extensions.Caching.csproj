@@ -15,7 +15,7 @@
 
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

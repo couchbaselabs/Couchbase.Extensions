@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+      <PackageVersion Include="Couchbase.Extensions.Caching" Version="4.0.1"/>
     <PackageVersion Include="CouchbaseNetClient" Version="3.8.0" />
     <PackageVersion Include="Couchbase.Extensions.DependencyInjection" Version="3.8.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
