@@ -8,6 +8,14 @@
     <PackageTags>Couchbase;netcore;cache;session;caching;distributed;middleware;database;nosql;json</PackageTags>
 
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+
+    <Version>4.0.1</Version>
+
+    <Copyright>Couchbase, Inc. 2025</Copyright>
+
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
