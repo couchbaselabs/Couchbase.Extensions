@@ -6,7 +6,7 @@
 
     <PackageTags>Couchbase;netcore</PackageTags>
 
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
