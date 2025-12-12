@@ -7,6 +7,10 @@
 
     <Description>Extends the Couchbase SDK with Snappier compression for key/value operations. Designed for .NET Core 3.0 and later.</Description>
     <PackageTags>Couchbase;netcore;compression;snappy</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>3.1.0-rc1</Version>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
