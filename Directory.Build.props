@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <UseArtifactsOutput>true</UseArtifactsOutput>
-    <LangVersion>12</LangVersion>
+    <LangVersion>14</LangVersion>
     <Version>3.3.5</Version>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -10,7 +10,7 @@
 
     <Authors>Couchbase Inc.</Authors>
     <Company>Couchbase Inc.</Company>
-    <Copyright>Couchbase, Inc. 2024</Copyright>
+    <Copyright>Couchbase, Inc. 2025</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/couchbaselabs/Couchbase.Extensions</PackageProjectUrl>
     <PackageIcon>couchbase.png</PackageIcon>
