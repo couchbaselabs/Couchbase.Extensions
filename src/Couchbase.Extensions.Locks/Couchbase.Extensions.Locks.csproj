@@ -10,13 +10,17 @@
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-    <Version>2.1.0</Version>
+    <Version>2.2.0-rc1</Version>
 
     <Copyright>Couchbase, Inc. 2025</Copyright>
 
     <SignAssembly>false</SignAssembly>
 
     <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
+
+    <PublicSign>false</PublicSign>
+
+    <Description>A system for managing distributed mutexs backed by Couchbase.</Description>
   </PropertyGroup>
 
   <ItemGroup>

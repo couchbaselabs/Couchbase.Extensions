@@ -9,13 +9,17 @@
 
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
 
-    <Version>4.0.1</Version>
+    <Version>4.1.0-rc1</Version>
 
     <Copyright>Couchbase, Inc. 2025</Copyright>
 
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
     <SignAssembly>false</SignAssembly>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
