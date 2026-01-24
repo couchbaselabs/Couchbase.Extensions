@@ -22,30 +22,29 @@ namespace Couchbase.Extensions.Caching.Internal
         private readonly TimeSpan _defaultSlidingExpiration;
         private ITypeTranscoder? _transcoder;
 
-        // For unit testing allow injecting a time provider
-        internal CouchbaseCache(ICouchbaseCacheCollectionProvider collectionProvider, IOptions<CouchbaseCacheOptions> options,
-            TimeProvider? timeProvider)
+        // Used for keyed caches, passes in the options directly after they are resolved using a specific name
+        internal CouchbaseCache(ICouchbaseCacheCollectionProvider collectionProvider, CouchbaseCacheOptions options,
+            TimeProvider? timeProvider = null)
         {
             ArgumentNullException.ThrowIfNull(collectionProvider);
             ArgumentNullException.ThrowIfNull(options);
 
-            var cacheOptions = options.Value;
-
-            if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)
+            if (options.DefaultSlidingExpiration <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(cacheOptions.DefaultSlidingExpiration),
-                    cacheOptions.DefaultSlidingExpiration,
+                    nameof(options.DefaultSlidingExpiration),
+                    options.DefaultSlidingExpiration,
                     "The sliding expiration value must be positive.");
             }
 
             _collectionProvider = collectionProvider;
             _timeProvider = timeProvider ?? TimeProvider.System;
-            _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
+            _defaultSlidingExpiration = options.DefaultSlidingExpiration;
         }
 
+        // Primary constructor used by DI
         public CouchbaseCache(ICouchbaseCacheCollectionProvider collectionProvider, IOptions<CouchbaseCacheOptions> options)
-            : this(collectionProvider, options, timeProvider: null)
+            : this(collectionProvider, options.Value, timeProvider: null)
         {
         }
 
