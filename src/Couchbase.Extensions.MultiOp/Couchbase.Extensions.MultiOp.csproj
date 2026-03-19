@@ -8,13 +8,14 @@
     <Description>Provides extensions for ICouchbaseCollection to perform multiple similar operations in parallel. For example, getting 100 documents based on their keys or performing a bulk insert of 100,000 documents. It is optimized to maximize throughput by limiting the degree of parallelization and to returning exceptions separately for each operation.</Description>
     <PackageTags>nosql, reactive, rx, json, database, couchbase</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-rc1</Version>
+    <Version>5.0.0</Version>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CouchbaseNetClient" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
 
