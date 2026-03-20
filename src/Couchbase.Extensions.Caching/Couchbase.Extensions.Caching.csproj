@@ -3,22 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
-
     <Description>A custom ASP.NET Core Middleware plugin for distributed cache using Couchbase server as the backing store. Supports both Memcached (in-memory) and Couchbase (persistent) buckets.</Description>
     <PackageTags>Couchbase;netcore;cache;session;caching;distributed;middleware;database;nosql;json</PackageTags>
-
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
-
-    <Version>5.0.0</Version>
-
-    <Copyright>Couchbase, Inc. 2025</Copyright>
-
+    <Version>5.0.1</Version>
+    <Copyright>Couchbase, Inc. 2026</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-
     <SignAssembly>false</SignAssembly>
-
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
     <AssemblyOriginatorKeyFile>Couchbase.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
